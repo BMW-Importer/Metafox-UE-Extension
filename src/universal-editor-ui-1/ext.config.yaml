@@ -1,0 +1,21 @@
+operations:
+  view:
+    - type: web
+      impl: index.html
+actions: actions
+web: web-src
+hooks:
+  post-app-deploy: ./hooks/post-deploy.js
+runtimeManifest:
+  packages:
+    metadata-editor:
+      license: Apache-2.0
+      actions:
+        get-metadata:
+          function: actions/get-metadata/index.js
+          web: 'yes'
+          runtime: nodejs:18
+        update-metadata:
+          function: actions/update-metadata/index.js
+          web: 'yes'
+          runtime: nodejs:18

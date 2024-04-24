@@ -1,0 +1,13 @@
+{
+  "name": "Metadata Editor",
+  "id": "metadata-editor",
+  "description": "Metadata Editor",
+  "version": "0.0.1",
+  "headerMenuButtons": [
+    {
+      "label": "Metadata Editor",
+      "needsModal": true,
+      "id": "metadata-editor"
+    }
+  ]
+}
