@@ -40,3 +40,6 @@ coverage
 # logs folder for aio-run-detached
 logs
 
+# lock files - auto-generated files 
+package-lock.json
+yarn.lock
