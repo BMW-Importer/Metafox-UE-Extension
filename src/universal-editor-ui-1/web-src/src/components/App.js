@@ -7,6 +7,7 @@ import ErrorBoundary from "react-error-boundary";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import ExtensionRegistration from "./ExtensionRegistration";
 import MetadataEditor from "./MetadataEditor";
+import TypeRenderer from "./TypeRenderer";
 
 function App() {
   return (
@@ -22,6 +23,10 @@ function App() {
             exact path="metadata-editor"
             element={<MetadataEditor />}
           />
+           <Route
+                exact path="renderer/:rendererId"
+                element={<TypeRenderer/>}
+            />
           {/* @todo YOUR CUSTOM ROUTES SHOULD BE HERE */}
         </Routes>
       </ErrorBoundary>
