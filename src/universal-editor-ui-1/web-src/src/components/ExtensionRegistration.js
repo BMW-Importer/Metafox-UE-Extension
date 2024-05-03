@@ -27,6 +27,21 @@ function ExtensionRegistration() {
             ];
           },
         },
+        canvas: {
+          getRenderers() {
+            return [
+              {
+                dataType: "car-model",
+                url: '/#/metadata-editor'
+              },
+              {
+                dataType: "page-metadata",
+                url: '/#/renderer/1',
+              },
+            ];
+          },
+        },
+
       }
     });
   };
