@@ -48,7 +48,7 @@ export default function () {
       try {
         const response = await fetch(CAR_MODEL_API_URL);
         const data = await response.json();
-        const carModelsGroupedByCarSeries = data.models.reduce(
+        const carModelsGroupedByCarSeries = data?.models?.reduce(
           (result, item) => {
             const seriesCode = item.seriesCode;
             if (!result[seriesCode]) {
@@ -68,28 +68,32 @@ export default function () {
         setGuestConnection(connection);
 
         const currrentCarModel = await connection.host.field.getValue();
+        console.log(">> currrentCarModel", currrentCarModel);
+        
 
-        let currentCarSeries = null;
-        for (let seriesCode in carModelsGroupedByCarSeries) {
-          if (
-            carModelsGroupedByCarSeries[seriesCode].includes(currrentCarModel)
-          ) {
-            currentCarSeries = seriesCode;
-            break;
+        if (carModelsGroupedByCarSeries && currrentCarModel) {
+          let currentCarSeries = null;
+          for (let seriesCode in carModelsGroupedByCarSeries) {
+            if (
+              carModelsGroupedByCarSeries[seriesCode].includes(currrentCarModel)
+            ) {
+              currentCarSeries = seriesCode;
+              break;
+            }
           }
+
+          console.log(
+            "selectedCarModel",
+            currrentCarModel,
+            "selectedCarSeries",
+            currentCarSeries
+          );
+
+          // get field value
+          setSelectedCarSeries(currentCarSeries);
+          setSelectedCarModel(currrentCarModel);
+          setApplicableCarModels(carModelsGroupedByCarSeries[currentCarSeries]);
         }
-
-        console.log(
-          "selectedCarModel",
-          currrentCarModel,
-          "selectedCarSeries",
-          currentCarSeries
-        );
-
-        // get field value
-        setSelectedCarSeries(currentCarSeries);
-        setSelectedCarModel(currrentCarModel);
-        setApplicableCarModels(carModelsGroupedByCarSeries[currentCarSeries]);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -100,13 +104,19 @@ export default function () {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (selectedCarSeries) {
+      setApplicableCarModels(carModels[selectedCarSeries]);
+    }
+  }, [selectedCarSeries]);
+
   return (
     <Provider theme={lightTheme} colorScheme="light">
       <Flex direction="column">
         <Form isHidden={loading}>
-          {/* series: {JSON.stringify(selectedCarSeries)}
+          series: {JSON.stringify(selectedCarSeries)}
           model: {JSON.stringify(selectedCarModel)}
-          applicableMOdels: {JSON.stringify(applicableCarModels)} */}
+          applicableMOdels: {JSON.stringify(applicableCarModels)}
           <Picker
             label="Car Series"
             necessityIndicator="label"
@@ -129,7 +139,7 @@ export default function () {
             // defaultSelectedKey={selectedCarModel}
             // isDisabled={!selectedCarSeries}
           >
-            {applicableCarModels.map((modelCode) => (
+            {applicableCarModels?.map((modelCode) => (
               <Item key={modelCode}>{modelCode}</Item>
             ))}
           </Picker>
