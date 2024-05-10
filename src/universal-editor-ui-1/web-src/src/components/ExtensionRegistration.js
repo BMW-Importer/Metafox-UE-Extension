@@ -31,7 +31,7 @@ function ExtensionRegistration() {
           getRenderers() {
             return [
               {
-                dataType: "car-model",
+                dataType: "text-input",
                 url: '/#/metadata-editor'
               },
               {
