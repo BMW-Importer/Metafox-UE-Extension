@@ -47,14 +47,14 @@ export default function () {
   const onCarModelRangeChangeHandler = (value) => {
     console.log("onChange on extension side", value);
     setselectedCarModelRange(value);
-    guestConnection.host.field.onChange(value);
+    guestConnection?.host.field.onChange(value);
   };
 
 
   const onCarModelsChangeHandler = (value) => {
     console.log("onChange on extension side", value);
     setselectedCarModels(value);
-    guestConnection.host.field.onChange(value);
+    guestConnection?.host.field.onChange(value);
   };
 
   useEffect(() => {
@@ -73,6 +73,7 @@ export default function () {
           },
           {}
         );
+        console.log(carModelRangeGroupedByCarSeries);
 
         const carModelGroupedByModelRange = data?.models?.reduce(
           (result, item) => {
@@ -86,12 +87,13 @@ export default function () {
           {}
         );
 
-        console.log(carModelRangeGroupedByCarSeries);
+        console.log(carModelGroupedByModelRange);
         setcarModelRange(carModelRangeGroupedByCarSeries);
         setCarSerieses(Object.keys(carModelRangeGroupedByCarSeries));
 
         //model
         setcarModels(carModelGroupedByModelRange);
+        console.log(Object.keys(carModelRangeGroupedByCarSeries));
         setCarSerieses(Object.keys(carModelGroupedByModelRange));
 
         const connection = await attach({ id: extensionId });
@@ -99,7 +101,7 @@ export default function () {
 
         const currrentCarModelrange = await connection.host.field.getValue();
         console.log(">> currrentCarModelrange", currrentCarModelrange);
-  
+
 
         if (carModelRangeGroupedByCarSeries && currrentCarModelrange) {
           let currentCarSeries = null;
@@ -124,36 +126,36 @@ export default function () {
           setSelectedCarSeries(currentCarSeries);
           setselectedCarModelRange(currrentCarModelrange);
           setApplicableCarModelRange(carModelRangeGroupedByCarSeries[currentCarSeries]);
-       
+
         }
-        
-          //model
 
-          const currrentCarModel = await connection.host.field.getValue();
-          console.log(">> currrentCarModel", currrentCarModel);
-          
+        //model
 
-          if (carModelGroupedByModelRange && currrentCarModel ) {
-            let currentCarSeries = null;
-            for (let seriesCode in carModelGroupedByModelRange) {
-              if (
-                carModelGroupedByModelRange[seriesCode].includes(currrentCarModel)
-              ) {
-                currentCarSeries = seriesCode;
-                break;
-              }
+        const currrentCarModel = await connection.host.field.getValue();
+        console.log(">> currrentCarModel", currrentCarModel);
+
+
+        if (carModelGroupedByModelRange && currrentCarModel) {
+          let currentCarSeries = null;
+          for (let seriesCode in carModelGroupedByModelRange) {
+            if (
+              carModelGroupedByModelRange[seriesCode].includes(currrentCarModel)
+            ) {
+              currentCarSeries = seriesCode;
+              break;
             }
+          }
 
-            console.log("model");
+          console.log("model");
 
-            console.log("Marketingseries",
+          console.log("Marketingseries",
             currentCarSeries);
 
           //model
           setSelectedCarSeries(currentCarSeries);
           setselectedCarModels(currrentCarModel);
           setApplicableCarModels(carModelGroupedByModelRange[currentCarSeries]);
-          }
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -206,8 +208,10 @@ export default function () {
             // defaultSelectedKey={selectedCarModelRange}
             isDisabled={!selectedCarSeries}
           >
-            {applicableCarModelRange?.map((modelrangeCode) => (
-              <Item key={modelrangeCode}>{modelrangeCode}</Item>
+            {[...new Set(applicableCarModelRange)].map((modelrangeCode) => (
+              <Item key={modelrangeCode} value={modelrangeCode}>
+                {modelrangeCode}
+              </Item>
             ))}
           </Picker>
 
@@ -218,8 +222,8 @@ export default function () {
             placeholder="Select a model"
             isRequired
             selectedKey={selectedCarModels}
-             //defaultSelectedKey={selectedCarModelRange}
-             isDisabled={!selectedCarModelRange}
+            //defaultSelectedKey={selectedCarModelRange}
+            isDisabled={!selectedCarModelRange}
           >
             {applicableCarModels?.map((modelCode) => (
               <Item key={modelCode}>{modelCode}</Item>
