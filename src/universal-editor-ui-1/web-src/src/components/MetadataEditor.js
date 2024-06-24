@@ -24,7 +24,7 @@ import actions from "../config.json";
 import { extensionId } from "./Constants";
 import { BASE_URL, MARKET_SEGMENT, LATEST } from "./Constants";
 
-const CAR_MODEL_API_URL = "https://productdata-int1.api.bmw//pdh/categoryhub/v1.0/all/bmw+marketB4R1+bmw_rs+sr_RS/latest";
+const CAR_MODEL_API_URL = `${BASE_URL}${MARKET_SEGMENT}${LATEST}`;
 export default function () {
   const [guestConnection, setGuestConnection] = useState();
   const [loading, setLoading] = useState(true);
@@ -47,14 +47,14 @@ export default function () {
   const onCarModelRangeChangeHandler = (value) => {
     console.log("onChange on extension side", value);
     setselectedCarModelRange(value);
-    guestConnection?.host.field.onChange(value);
+    guestConnection.host.field.onChange(value);
   };
 
 
   const onCarModelsChangeHandler = (value) => {
     console.log("onChange on extension side", value);
     setselectedCarModels(value);
-    guestConnection?.host.field.onChange(value);
+    guestConnection.host.field.onChange(value);
   };
 
   useEffect(() => {
@@ -97,6 +97,7 @@ export default function () {
         setCarSerieses(Object.keys(carModelGroupedByModelRange));
 
         const connection = await attach({ id: extensionId });
+        console.log(extensionId,connection);
         setGuestConnection(connection);
 
         const currrentCarModelrange = await connection.host.field.getValue();
