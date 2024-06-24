@@ -22,9 +22,9 @@ import React, { useEffect, useState } from "react";
 import FileGear from "@spectrum-icons/workflow/FileGear";
 import actions from "../config.json";
 import { extensionId } from "./Constants";
+import { BASE_URL, MARKET_SEGMENT, LATEST } from "./Constants";
 
-const CAR_MODEL_API_URL =
-  "https://productdata-int1.api.bmw//pdh/categoryhub/v1.0/all/bmw+marketB4R1+bmw_rs+sr_RS/latest";
+const CAR_MODEL_API_URL = `${BASE_URL}${MARKET_SEGMENT}${LATEST}`;
 export default function () {
   const [guestConnection, setGuestConnection] = useState();
   const [loading, setLoading] = useState(true);
