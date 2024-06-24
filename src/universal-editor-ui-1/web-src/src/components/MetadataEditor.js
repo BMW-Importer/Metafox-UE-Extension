@@ -31,15 +31,29 @@ export default function () {
   const [headers, setHeaders] = useState();
   const [path, setPath] = useState("");
   const [savingInProgress, setSavingInProgress] = useState(false);
-  const [carModels, setCarModels] = useState();
-  const [applicableCarModels, setApplicableCarModels] = useState([]);
+
+  const [carModelRange, setcarModelRange] = useState();
+  const [applicableCarModelRange, setApplicableCarModelRange] = useState([]);
+  const [selectedCarModelRange, setselectedCarModelRange] = useState();
+
   const [carSerieses, setCarSerieses] = useState([]);
   const [selectedCarSeries, setSelectedCarSeries] = useState();
-  const [selectedCarModel, setSelectedCarModel] = useState();
 
-  const onCarModelChangeHandler = (value) => {
+  const [carModels, setcarModels] = useState();
+  const [selectedCarModels, setselectedCarModels] = useState();
+  const [applicableCarModels, setApplicableCarModels] = useState([]);
+
+
+  const onCarModelRangeChangeHandler = (value) => {
     console.log("onChange on extension side", value);
-    setSelectedCarModel(value);
+    setselectedCarModelRange(value);
+    guestConnection.host.field.onChange(value);
+  };
+
+
+  const onCarModelsChangeHandler = (value) => {
+    console.log("onChange on extension side", value);
+    setselectedCarModels(value);
     guestConnection.host.field.onChange(value);
   };
 
@@ -48,52 +62,98 @@ export default function () {
       try {
         const response = await fetch(CAR_MODEL_API_URL);
         const data = await response.json();
-        const carModelsGroupedByCarSeries = data?.models?.reduce(
+        const carModelRangeGroupedByCarSeries = data?.models?.reduce(
           (result, item) => {
             const seriesCode = item.seriesCode;
             if (!result[seriesCode]) {
               result[seriesCode] = [];
             }
-            result[seriesCode].push(item.modelCode);
+            result[seriesCode].push(item.modelRangeCode);   //rangecode
             return result;
           },
           {}
         );
 
-        console.log(carModelsGroupedByCarSeries);
-        setCarModels(carModelsGroupedByCarSeries);
-        setCarSerieses(Object.keys(carModelsGroupedByCarSeries));
+        const carModelGroupedByModelRange = data?.models?.reduce(
+          (result, item) => {
+            const seriesCode = item.seriesCode;
+            if (!result[seriesCode]) {
+              result[seriesCode] = [];
+            }
+            result[seriesCode].push(item.modelCode);   //modelcode
+            return result;
+          },
+          {}
+        );
+
+        console.log(carModelRangeGroupedByCarSeries);
+        setcarModelRange(carModelRangeGroupedByCarSeries);
+        setCarSerieses(Object.keys(carModelRangeGroupedByCarSeries));
+
+        //model
+        setcarModels(carModelGroupedByModelRange);
+        setCarSerieses(Object.keys(carModelGroupedByModelRange));
 
         const connection = await attach({ id: extensionId });
         setGuestConnection(connection);
 
-        const currrentCarModel = await connection.host.field.getValue();
-        console.log(">> currrentCarModel", currrentCarModel);
-        
+        const currrentCarModelrange = await connection.host.field.getValue();
+        console.log(">> currrentCarModelrange", currrentCarModelrange);
+  
 
-        if (carModelsGroupedByCarSeries && currrentCarModel) {
+        if (carModelRangeGroupedByCarSeries && currrentCarModelrange) {
           let currentCarSeries = null;
-          for (let seriesCode in carModelsGroupedByCarSeries) {
+          for (let seriesCode in carModelRangeGroupedByCarSeries) {
             if (
-              carModelsGroupedByCarSeries[seriesCode].includes(currrentCarModel)
+              carModelRangeGroupedByCarSeries[seriesCode].includes(currrentCarModelrange)
             ) {
               currentCarSeries = seriesCode;
               break;
             }
           }
 
+
           console.log(
-            "selectedCarModel",
-            currrentCarModel,
+            "selectedCarModelRange",
+            currrentCarModelrange,
             "selectedCarSeries",
-            currentCarSeries
+            currentCarSeries,
           );
 
           // get field value
           setSelectedCarSeries(currentCarSeries);
-          setSelectedCarModel(currrentCarModel);
-          setApplicableCarModels(carModelsGroupedByCarSeries[currentCarSeries]);
+          setselectedCarModelRange(currrentCarModelrange);
+          setApplicableCarModelRange(carModelRangeGroupedByCarSeries[currentCarSeries]);
+       
         }
+        
+          //model
+
+          const currrentCarModel = await connection.host.field.getValue();
+          console.log(">> currrentCarModel", currrentCarModel);
+          
+
+          if (carModelGroupedByModelRange && currrentCarModel ) {
+            let currentCarSeries = null;
+            for (let seriesCode in carModelGroupedByModelRange) {
+              if (
+                carModelGroupedByModelRange[seriesCode].includes(currrentCarModel)
+              ) {
+                currentCarSeries = seriesCode;
+                break;
+              }
+            }
+
+            console.log("model");
+
+            console.log("Marketingseries",
+            currentCarSeries);
+
+          //model
+          setSelectedCarSeries(currentCarSeries);
+          setselectedCarModels(currrentCarModel);
+          setApplicableCarModels(carModelGroupedByModelRange[currentCarSeries]);
+          }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -106,6 +166,13 @@ export default function () {
 
   useEffect(() => {
     if (selectedCarSeries) {
+      setApplicableCarModelRange(carModelRange[selectedCarSeries]);
+    }
+  }, [selectedCarSeries]);
+
+  useEffect(() => {
+    if (selectedCarSeries) {
+      //model
       setApplicableCarModels(carModels[selectedCarSeries]);
     }
   }, [selectedCarSeries]);
@@ -115,8 +182,8 @@ export default function () {
       <Flex direction="column">
         <Form isHidden={loading}>
           series: {JSON.stringify(selectedCarSeries)}
-          model: {JSON.stringify(selectedCarModel)}
-          applicableMOdels: {JSON.stringify(applicableCarModels)}
+          model: {JSON.stringify(selectedCarModelRange)}
+          applicableMOdels: {JSON.stringify(applicableCarModelRange)}
           <Picker
             label="Car Series"
             necessityIndicator="label"
@@ -130,19 +197,35 @@ export default function () {
             ))}
           </Picker>
           <Picker
+            label="Car Model range"
+            necessityIndicator="label"
+            onSelectionChange={onCarModelRangeChangeHandler}
+            placeholder="Select a model range"
+            isRequired
+            selectedKey={selectedCarModelRange}
+            // defaultSelectedKey={selectedCarModelRange}
+            isDisabled={!selectedCarSeries}
+          >
+            {applicableCarModelRange?.map((modelrangeCode) => (
+              <Item key={modelrangeCode}>{modelrangeCode}</Item>
+            ))}
+          </Picker>
+
+          <Picker
             label="Car Model"
             necessityIndicator="label"
-            onSelectionChange={onCarModelChangeHandler}
+            onSelectionChange={onCarModelsChangeHandler}
             placeholder="Select a model"
             isRequired
-            selectedKey={selectedCarModel}
-            // defaultSelectedKey={selectedCarModel}
-            // isDisabled={!selectedCarSeries}
+            selectedKey={selectedCarModels}
+             //defaultSelectedKey={selectedCarModelRange}
+             isDisabled={!selectedCarModelRange}
           >
             {applicableCarModels?.map((modelCode) => (
               <Item key={modelCode}>{modelCode}</Item>
             ))}
           </Picker>
+
         </Form>
         <View isHidden={!loading}>
           <Flex
