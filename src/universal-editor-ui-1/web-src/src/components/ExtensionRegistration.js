@@ -35,7 +35,7 @@ function ExtensionRegistration() {
                 url: '/#/metadata-editor'
               },
               {
-                dataType: "text",
+                dataType: "customtype",
                 url: '/#/renderer/1',
               },
             ];
