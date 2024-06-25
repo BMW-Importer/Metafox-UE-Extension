@@ -36,7 +36,7 @@ function ExtensionRegistration() {
               },
               {
                 dataType: "customtype",
-                url: '/#/renderer/1',
+                url: '/#/metadata-editor',
               },
             ];
           },
