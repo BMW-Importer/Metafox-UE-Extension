@@ -53,10 +53,12 @@ export default function () {
     setSelectedCarModels(value);
     setModelCode(value);
     guestConnection?.host?.field.onChange(value);
+    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}, ${selected},`);
+
   };
   const onCarTransmissionChangeHandler = (value) => {
     setSelectedTransmissionCode(value);
-    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${selectedCarModels}, ${value}`);
+    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${selectedCarModels}, ${selected}, ${value}`);
   };
   const URL = 'https://productdata.api.bmw/pdh/technicaldata/v2.0/model/bmw+marketB4R1+bmw_rs+sr_RS/latest';
 
