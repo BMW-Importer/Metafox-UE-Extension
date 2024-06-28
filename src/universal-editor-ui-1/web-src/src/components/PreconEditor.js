@@ -18,6 +18,7 @@ import {
 } from "@adobe/react-spectrum";
 import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
+import axios from 'axios';
 
 import FileGear from "@spectrum-icons/workflow/FileGear";
 import actions from "../config.json";
@@ -30,17 +31,30 @@ export default function () {
   const [headers, setHeaders] = useState();
   const [path, setPath] = useState("");
   const [savingInProgress, setSavingInProgress] = useState(false);
+
   const [carSerieses, setCarSerieses] = useState([]);
-  const [modelRange,setModelRange]= useState([]);
+  const [selectedCarSeries, setSelectedCarSeries] = useState();
 
-  // const onCarModelChangeHandler = (value) => {
-  //   console.log("onChange on extension side", value);
-  //   setSelectedCarModel(value);
-  //   guestConnection.host.field.onChange(value);
-  // };
+  const [seriesCode,setSeriesCode]= useState();
 
+  const [modelRangeData,setModelRangeData]= useState([]);
+  const [selectedCarModelRange, setSelectedCarModelRange] = useState();
+
+
+  const onCarSeriesChangeHandler = (value) => {
+    console.log("onChange on extension side", value);
+    setSelectedCarSeries(value);
+    setSeriesCode(value);
+    guestConnection?.host?.field.onChange(value);
+  };
+  
+  const onCarModelRangeChangeHandler = (value) => {
+    setModelRangeData(value);
+    setSelectedCarModelRange(value);
+    guestConnection?.host?.field.onChange(value)
+  };
   //modelrange
-  const URL = "https://productdata.api.bmw/pdh/precons/v1.0/ranges/:market/:serie"
+  const URL = `https://productdata.api.bmw/pdh/precons/v1.0/ranges/${MARKET_SEGMENT}`;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,7 +66,7 @@ export default function () {
         const seriesCodes = Object.values(data).map(item => item.seriesCode);
         setCarSerieses(Object.values(seriesCodes));
         
-        data?.seriesCodes?.map((model) => setModelRange(model?.modelRange));
+        seriesCodes?.map((item) => setSeriesCode(item?.seriesCode));
 
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
@@ -71,12 +85,16 @@ export default function () {
 
   useEffect(() => {
     const fetchModelRange = async () => {
-      if (!modelRange) return;
+      console.log(seriesCode);
+      if (!seriesCode) return;
       try {
-        const modelDetailUrl = `${URL}/${modelRange}`;
+        const modelDetailUrl = `${URL}/${seriesCode}`;
         const modelDetailResponse = await axios.get(modelDetailUrl);
+        console.log(modelDetailResponse);
         const modelDetail = modelDetailResponse?.data;
-        setVehicleData(modelDetail?.vehicles);
+        const rangeCode = Object.values(modelDetail).map(item => item.modelRangeCode);
+        setModelRangeData(Object.values(rangeCode));
+        
       } catch (error) {
         console.error('Error fetching details for model', error);
       } finally {
@@ -85,7 +103,14 @@ export default function () {
     };
 
     fetchModelRange();
-  }, [modelRange]);
+  }, [seriesCode]);
+
+  useEffect(() =>{
+    if (modelRangeData.length > 0) {
+      setSelectedCarModelRange(modelRangeData);
+    }
+    console.log(modelRangeData);
+}, [modelRangeData]);
 
   return (
     <Provider theme={lightTheme} colorScheme="light">
@@ -94,27 +119,27 @@ export default function () {
           <Picker
             label="Car Series"
             necessityIndicator="label"
-            //onSelectionChange={setSelectedCarSeries}
+            onSelectionChange={onCarSeriesChangeHandler}
             placeholder="Select a series"
-            selectedKey={carSerieses}
+            selectedKey={selectedCarSeries}
             isRequired
           >
             {carSerieses.map((item) => (
               <Item key={item} value={item}>{item}</Item>
             ))}
           </Picker>
-          {/* <Picker
+          <Picker
             label="Car Model"
             necessityIndicator="label"
-            onSelectionChange={onCarModelChangeHandler}
+            onSelectionChange={onCarModelRangeChangeHandler}
             placeholder="Select a model"
             isRequired
-            selectedKey={selectedCarModel}
+            selectedKey={selectedCarModelRange}
           >
-            {applicableCarModels?.map((modelRange) => (
-              <Item key={modelRange}>{modelRange}</Item>
+            {selectedCarModelRange?.map((rangeCode) => (
+              <Item key={rangeCode}>{rangeCode}</Item>
             ))}
-          </Picker> */}
+          </Picker>
         </Form>
         <View isHidden={!loading}>
           <Flex
