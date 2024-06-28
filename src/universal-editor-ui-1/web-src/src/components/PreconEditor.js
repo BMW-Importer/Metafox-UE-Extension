@@ -25,6 +25,7 @@ import actions from "../config.json";
 import { priConExtensionId,SERIES,MARKET_SEGMENT } from "./Constants";
 
 const PRECON_MODEL_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/${SERIES}/${MARKET_SEGMENT}`;
+
 export default function () {
   const [guestConnection, setGuestConnection] = useState();
   const [loading, setLoading] = useState(true);
@@ -36,9 +37,13 @@ export default function () {
   const [selectedCarSeries, setSelectedCarSeries] = useState();
 
   const [seriesCode,setSeriesCode]= useState();
+  const [rangeCode,setRangeCode]= useState();
 
-  const [modelRangeData,setModelRangeData]= useState([]);
+  const [carModelRange, setCarModelRange] = useState([]);
   const [selectedCarModelRange, setSelectedCarModelRange] = useState();
+
+  const [preConData, setPreconData] = useState([]);
+  const [selectedPrecon, setSelectedPrecon] = useState();
 
 
   const onCarSeriesChangeHandler = (value) => {
@@ -49,25 +54,26 @@ export default function () {
   };
   
   const onCarModelRangeChangeHandler = (value) => {
-    setModelRangeData(value);
+    console.log("onChange on extension side", value);
     setSelectedCarModelRange(value);
+    setRangeCode(value);
     guestConnection?.host?.field.onChange(value)
   };
-  //modelrange
-  const URL = `https://productdata.api.bmw/pdh/precons/v1.0/ranges/${MARKET_SEGMENT}`;
+
+  const onPreconChangeHandler = (value) => {
+    console.log("onChange on extension side", value);
+    setSelectedPrecon(value);
+    guestConnection?.host?.field.onChange(value)
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(PRECON_MODEL_API_URL);
         const data = await response.json();
-        console.log(data);
-        
         const seriesCodes = Object.values(data).map(item => item.seriesCode);
         setCarSerieses(Object.values(seriesCodes));
-        
         seriesCodes?.map((item) => setSeriesCode(item?.seriesCode));
-
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
       } catch (error) {
@@ -80,21 +86,21 @@ export default function () {
     fetchData();
   }, []);
 
-
   //modelrange
-
+    //modelrange
+  const URL = `https://productdata.api.bmw/pdh/precons/v1.0/ranges/${MARKET_SEGMENT}`;
   useEffect(() => {
     const fetchModelRange = async () => {
-      console.log(seriesCode);
       if (!seriesCode) return;
       try {
         const modelDetailUrl = `${URL}/${seriesCode}`;
         const modelDetailResponse = await axios.get(modelDetailUrl);
-        console.log(modelDetailResponse);
         const modelDetail = modelDetailResponse?.data;
         const rangeCode = Object.values(modelDetail).map(item => item.modelRangeCode);
-        setModelRangeData(Object.values(rangeCode));
-        
+        setCarModelRange(Object.values(rangeCode));
+        rangeCode?.map((item) => setRangeCode(item?.modelRangeCode));
+        const connection = await attach({ id: priConExtensionId });
+        setGuestConnection(connection);
       } catch (error) {
         console.error('Error fetching details for model', error);
       } finally {
@@ -105,12 +111,27 @@ export default function () {
     fetchModelRange();
   }, [seriesCode]);
 
+  const PRECON_VEHICLE_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/vehicles/${MARKET_SEGMENT}`
   useEffect(() =>{
-    if (modelRangeData.length > 0) {
-      setSelectedCarModelRange(modelRangeData);
-    }
-    console.log(modelRangeData);
-}, [modelRangeData]);
+    const fetchVehicle = async () => {
+      if (!rangeCode) return;
+      try {
+        const modelDetailUrl = `${PRECON_VEHICLE_API_URL}/${rangeCode}?vehicle_type=PRECON`;
+        const response = await axios.get(modelDetailUrl);
+        const preConId = Object.values(response.data).map(item => item.id);
+        setPreconData(Object.values(preConId));
+
+        const connection = await attach({ id: priConExtensionId });
+        setGuestConnection(connection);
+      } catch (error) {
+        console.error('Error fetching details for model', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVehicle();
+}, [rangeCode]);
 
   return (
     <Provider theme={lightTheme} colorScheme="light">
@@ -136,8 +157,20 @@ export default function () {
             isRequired
             selectedKey={selectedCarModelRange}
           >
-            {selectedCarModelRange?.map((rangeCode) => (
+            {carModelRange?.map((rangeCode) => (
               <Item key={rangeCode}>{rangeCode}</Item>
+            ))}
+          </Picker>
+          <Picker
+            label="Precon ID"
+            necessityIndicator="label"
+            onSelectionChange={onPreconChangeHandler}
+            placeholder="Select a Precon Id"
+            isRequired
+            selectedKey={selectedPrecon}
+          >
+            {preConData?.map((item) => (
+              <Item key={item} value={item}>{item}</Item>
             ))}
           </Picker>
         </Form>
