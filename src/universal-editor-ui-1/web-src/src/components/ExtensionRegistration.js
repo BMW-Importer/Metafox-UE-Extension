@@ -23,6 +23,15 @@ function ExtensionRegistration() {
                 header: 'Metadata Editor',
                 hotkey: 'M',
                 url: "/index.html#/metadata-editor",
+              },
+              {
+                extension: 'precon-editor',
+                id: 'precon-editor',
+                label: 'Precon Editor',
+                icon: 'FileGear',
+                header: 'Precon Editor',
+                hotkey: 'M',
+                url: "/index.html#/precon-editor",
               }
             ];
           },
@@ -37,6 +46,10 @@ function ExtensionRegistration() {
               {
                 dataType: "customtype",
                 url: '/#/metadata-editor',
+              },
+              {
+                dataType: "text",
+                url: '/#/precon-editor',
               },
             ];
           },
