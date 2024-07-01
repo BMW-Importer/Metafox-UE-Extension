@@ -32,7 +32,17 @@ function ExtensionRegistration() {
                 header: 'Precon Editor',
                 hotkey: 'M',
                 url: "/index.html#/precon-editor",
+              },
+              {
+                extension: 'shopbylook-editor',
+                id: 'shopbylook-editor',
+                label: 'ShopByLook Editor',
+                icon: 'FileGear',
+                header: 'ShopByLook Editor',
+                hotkey: 'M',
+                url: "/index.html#/shopbylook-editor",
               }
+
             ];
           },
         },
@@ -50,6 +60,10 @@ function ExtensionRegistration() {
               {
                 dataType: "preconcustomtype",
                 url: '/#/precon-editor',
+              },
+              {
+                dataType: "shopbylookcustomtype",
+                url: '/#/shopbylook-editor',
               },
             ];
           },
