@@ -64,7 +64,7 @@ export default function () {
   const onVehicleChangeHandler = (value) => {
     console.log("onChange on extension side", value);
     setSelectedVehicleType(value);
-    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${selectedPrecon}, ${value}`);
+    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
   };
  
   useEffect(() => {
@@ -118,7 +118,6 @@ export default function () {
         const modelDetailUrl = `${PRECON_VEHICLES_API_URL}/${rangeCode}?vehicle_type=PRECON`;
         const response = await axios.get(modelDetailUrl);
         const vehicleData = Object.values(response.data).map(item => item.name);
-        // console.log(vehicleData);
         setVehicleTypeData(Object.values(vehicleData));
         // preConId?.map((item) => setPreconId(item?.id));
         const connection = await attach({ id: priConExtensionId });
@@ -156,7 +155,7 @@ export default function () {
   //   fetchVehicleByPreConId();
   // }, [preconId]);
  
- 
+  console.log(vehicleTypeData?.length);
  
   return (
     <Provider theme={lightTheme} colorScheme="light">
@@ -211,7 +210,7 @@ export default function () {
           >
             {/* Render "(NO Value)" option if preconData is empty or null */}
             {vehicleTypeData && vehicleTypeData.length > 0 ? (
-              vehicleTypeData.map((item) => (
+             [...new Set(vehicleTypeData)].map((item) => (
                 <Item key={item} textValue={item}>
                   {item}
                 </Item>
