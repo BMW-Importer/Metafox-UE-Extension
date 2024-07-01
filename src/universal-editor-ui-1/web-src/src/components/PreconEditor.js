@@ -1,7 +1,7 @@
 /*
 * <license header>
 */
-
+ 
 import {
   Flex,
   Form,
@@ -15,60 +15,58 @@ import {
 import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { priConExtensionId,SERIES,MARKET_SEGMENT } from "./Constants";
-
+import { priConExtensionId, SERIES, MARKET_SEGMENT } from "./Constants";
+ 
 const PRECON_MODEL_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/${SERIES}/${MARKET_SEGMENT}`;
-
+ 
 export default function () {
   const [guestConnection, setGuestConnection] = useState();
   const [loading, setLoading] = useState(true);
-
+ 
   const [carSerieses, setCarSerieses] = useState([]);
   const [selectedCarSeries, setSelectedCarSeries] = useState('');
-
-  const [seriesCode,setSeriesCode]= useState('');
-  const [rangeCode,setRangeCode]= useState('');
-  const [preconId,setPreconId]= useState('');
-
-  
+ 
+  const [seriesCode, setSeriesCode] = useState('');
+  const [rangeCode, setRangeCode] = useState('');
+  const [preconId, setPreconId] = useState('');
+ 
+ 
   const [carModelRange, setCarModelRange] = useState([]);
   const [selectedCarModelRange, setSelectedCarModelRange] = useState('');
-
+ 
   const [preconData, setPreconData] = useState([]);
   const [selectedPrecon, setSelectedPrecon] = useState('');
-
+ 
   const [vehicleTypeData, setVehicleTypeData] = useState([]);
   const [selectedVehicleType, setSelectedVehicleType] = useState('');
-
-
-
+ 
   const onCarSeriesChangeHandler = (value) => {
     console.log("onChange on extension side", value);
     setSelectedCarSeries(value);
     setSeriesCode(value);
     guestConnection?.host?.field.onChange(value);
   };
-  
+ 
   const onCarModelRangeChangeHandler = (value) => {
     console.log("onChange on extension side", value);
     setSelectedCarModelRange(value);
     setRangeCode(value);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
   };
-
-  const onPreconChangeHandler = (value) => {
-    console.log("onChange on extension side", value);
-    setSelectedPrecon(value);
-    setPreconId(value);
-    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
-  };
-
+ 
+  // const onPreconChangeHandler = (value) => {
+  //   console.log("onChange on extension side", value);
+  //   setSelectedPrecon(value);
+  //   setPreconId(value);
+  //   guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
+  // };
+ 
   const onVehicleChangeHandler = (value) => {
     console.log("onChange on extension side", value);
     setSelectedVehicleType(value);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${selectedPrecon}, ${value}`);
   };
-
+ 
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -85,10 +83,10 @@ export default function () {
         setLoading(false);
       }
     };
-
+ 
     fetchData();
   }, []);
-    //modelrange
+  //modelrange
   const URL = `https://productdata.api.bmw/pdh/precons/v1.0/ranges/${MARKET_SEGMENT}`;
   useEffect(() => {
     const fetchModelRange = async () => {
@@ -108,20 +106,21 @@ export default function () {
         setLoading(false);
       }
     };
-
+ 
     fetchModelRange();
   }, [seriesCode]);
-
+ 
   const PRECON_VEHICLES_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/vehicles/${MARKET_SEGMENT}`
-  useEffect(() =>{
+  useEffect(() => {
     const fetchVehicles = async () => {
       if (!rangeCode) return;
       try {
         const modelDetailUrl = `${PRECON_VEHICLES_API_URL}/${rangeCode}?vehicle_type=PRECON`;
         const response = await axios.get(modelDetailUrl);
-        const preConId = Object.values(response.data).map(item => item.id);
-        setPreconData(Object.values(preConId));
-        preConId?.map((item) => setPreconId(item?.id));
+        const vehicleData = Object.values(response.data).map(item => item.name);
+        // console.log(vehicleData);
+        setVehicleTypeData(Object.values(vehicleData));
+        // preConId?.map((item) => setPreconId(item?.id));
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
       } catch (error) {
@@ -130,41 +129,41 @@ export default function () {
         setLoading(false);
       }
     };
-
+ 
     fetchVehicles();
-}, [rangeCode]);
-
-const PRECON_ID_VEHICLE_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/vehicle/${MARKET_SEGMENT}`
-useEffect(() =>{
-  const fetchVehicleByPreConId = async () => {
-    if (!preconId) return;
-    try {
-      const modelDetailUrl = `${PRECON_ID_VEHICLE_API_URL}/${preconId}`;
-      const response = await axios.get(modelDetailUrl);
-      const vehicleData = response.data;
-      const vehicleName = [];
-      vehicleName.push(vehicleData.name);
-      setVehicleTypeData(vehicleName);
-      const connection = await attach({ id: priConExtensionId });
-      setGuestConnection(connection);
-    } catch (error) {
-      console.error('Error fetching details for model', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchVehicleByPreConId();
-}, [preconId]);
-
-
-
+  }, [rangeCode]);
+ 
+  // const PRECON_ID_VEHICLE_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/vehicle/${MARKET_SEGMENT}`
+  // useEffect(() =>{
+  //   const fetchVehicleByPreConId = async () => {
+  //     if (!preconId) return;
+  //     try {
+  //       const modelDetailUrl = `${PRECON_ID_VEHICLE_API_URL}/${preconId}`;
+  //       const response = await axios.get(modelDetailUrl);
+  //       const vehicleData = response.data;
+  //       const vehicleName = [];
+  //       vehicleName.push(vehicleData.name);
+  //       setVehicleTypeData(vehicleName);
+  //       const connection = await attach({ id: priConExtensionId });
+  //       setGuestConnection(connection);
+  //     } catch (error) {
+  //       console.error('Error fetching details for model', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+ 
+  //   fetchVehicleByPreConId();
+  // }, [preconId]);
+ 
+ 
+ 
   return (
     <Provider theme={lightTheme} colorScheme="light">
       <Flex direction="column">
-        <Form isHidden={loading}>
+        <Form isHidden={loading} UNSAFE_className="precon-form">
           <Picker
-            label="Car Series"
+            label="Series"
             necessityIndicator="label"
             onSelectionChange={onCarSeriesChangeHandler}
             placeholder="Select a series"
@@ -172,11 +171,11 @@ useEffect(() =>{
             isRequired
           >
             {carSerieses.map((item) => (
-               <Item textValue={item} key={item}>{item}</Item>
+              <Item textValue={item} key={item}>{item}</Item>
             ))}
           </Picker>
           <Picker
-            label="Car Model"
+            label="Model Range"
             necessityIndicator="label"
             onSelectionChange={onCarModelRangeChangeHandler}
             placeholder="Select a model"
@@ -185,11 +184,11 @@ useEffect(() =>{
             selectedKey={selectedCarModelRange}
           >
             {carModelRange?.map((rangeCode) => (
-              <Item  textValue={rangeCode} key={rangeCode}>{rangeCode}</Item>
+              <Item textValue={rangeCode} key={rangeCode}>{rangeCode}</Item>
             ))}
           </Picker>
-          <Picker
-            label="Precon ID"
+          {/* <Picker
+            label="PreCon ID"
             necessityIndicator="label"
             onSelectionChange={onPreconChangeHandler}
             placeholder="Select a Precon Id"
@@ -200,20 +199,29 @@ useEffect(() =>{
             {preconData?.map((item) => (
               <Item key={item} textValue={item}>{item}</Item>
             ))}
-          </Picker>
-          {/* <Picker
+          </Picker> */}
+          <Picker
             label="Vehicle Type"
             necessityIndicator="label"
             onSelectionChange={onVehicleChangeHandler}
             placeholder="Select a Vehicle Type"
             isRequired
-            isDisabled={!selectedPrecon}
+            isDisabled={!selectedCarModelRange}
             selectedKey={selectedVehicleType}
           >
-            {vehicleTypeData?.map((name) => (
-              <Item key={name} textValue={name}>{name}</Item>
-            ))}
-          </Picker> */}
+            {/* Render "(NO Value)" option if preconData is empty or null */}
+            {vehicleTypeData && vehicleTypeData.length > 0 ? (
+              vehicleTypeData.map((item) => (
+                <Item key={item} textValue={item}>
+                  {item}
+                </Item>
+              ))
+            ) : (
+              <Item textValue="(NO Value)">
+                (NO Vehicle Find)
+              </Item>
+            )}
+          </Picker>
         </Form>
         <View isHidden={!loading}>
           <Flex
