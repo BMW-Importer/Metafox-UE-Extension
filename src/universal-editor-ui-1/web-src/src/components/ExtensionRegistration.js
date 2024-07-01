@@ -48,7 +48,7 @@ function ExtensionRegistration() {
                 url: '/#/metadata-editor',
               },
               {
-                dataType: "text",
+                dataType: "preconcustomtype",
                 url: '/#/precon-editor',
               },
             ];

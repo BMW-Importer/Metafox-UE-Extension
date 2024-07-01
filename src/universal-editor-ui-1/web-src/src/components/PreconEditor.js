@@ -3,25 +3,18 @@
 */
 
 import {
-  Button,
-  Divider,
   Flex,
   Form,
-  Heading,
   Item,
   Picker,
   ProgressCircle,
   Provider,
-  TextField,
   View,
   lightTheme,
 } from "@adobe/react-spectrum";
 import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-
-import FileGear from "@spectrum-icons/workflow/FileGear";
-import actions from "../config.json";
 import { priConExtensionId,SERIES,MARKET_SEGMENT } from "./Constants";
 
 const PRECON_MODEL_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/${SERIES}/${MARKET_SEGMENT}`;
@@ -29,21 +22,24 @@ const PRECON_MODEL_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/${SER
 export default function () {
   const [guestConnection, setGuestConnection] = useState();
   const [loading, setLoading] = useState(true);
-  const [headers, setHeaders] = useState();
-  const [path, setPath] = useState("");
-  const [savingInProgress, setSavingInProgress] = useState(false);
 
   const [carSerieses, setCarSerieses] = useState([]);
-  const [selectedCarSeries, setSelectedCarSeries] = useState();
+  const [selectedCarSeries, setSelectedCarSeries] = useState('');
 
-  const [seriesCode,setSeriesCode]= useState();
-  const [rangeCode,setRangeCode]= useState();
+  const [seriesCode,setSeriesCode]= useState('');
+  const [rangeCode,setRangeCode]= useState('');
+  const [preconId,setPreconId]= useState('');
 
+  
   const [carModelRange, setCarModelRange] = useState([]);
-  const [selectedCarModelRange, setSelectedCarModelRange] = useState();
+  const [selectedCarModelRange, setSelectedCarModelRange] = useState('');
 
-  const [preConData, setPreconData] = useState([]);
-  const [selectedPrecon, setSelectedPrecon] = useState();
+  const [preconData, setPreconData] = useState([]);
+  const [selectedPrecon, setSelectedPrecon] = useState('');
+
+  const [vehicleTypeData, setVehicleTypeData] = useState([]);
+  const [selectedVehicleType, setSelectedVehicleType] = useState('');
+
 
 
   const onCarSeriesChangeHandler = (value) => {
@@ -57,13 +53,20 @@ export default function () {
     console.log("onChange on extension side", value);
     setSelectedCarModelRange(value);
     setRangeCode(value);
-    guestConnection?.host?.field.onChange(value)
+    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
   };
 
   const onPreconChangeHandler = (value) => {
     console.log("onChange on extension side", value);
     setSelectedPrecon(value);
-    guestConnection?.host?.field.onChange(value)
+    setPreconId(value);
+    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
+  };
+
+  const onVehicleChangeHandler = (value) => {
+    console.log("onChange on extension side", value);
+    setSelectedVehicleType(value);
+    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${selectedPrecon}, ${value}`);
   };
 
   useEffect(() => {
@@ -85,8 +88,6 @@ export default function () {
 
     fetchData();
   }, []);
-
-  //modelrange
     //modelrange
   const URL = `https://productdata.api.bmw/pdh/precons/v1.0/ranges/${MARKET_SEGMENT}`;
   useEffect(() => {
@@ -111,16 +112,16 @@ export default function () {
     fetchModelRange();
   }, [seriesCode]);
 
-  const PRECON_VEHICLE_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/vehicles/${MARKET_SEGMENT}`
+  const PRECON_VEHICLES_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/vehicles/${MARKET_SEGMENT}`
   useEffect(() =>{
-    const fetchVehicle = async () => {
+    const fetchVehicles = async () => {
       if (!rangeCode) return;
       try {
-        const modelDetailUrl = `${PRECON_VEHICLE_API_URL}/${rangeCode}?vehicle_type=PRECON`;
+        const modelDetailUrl = `${PRECON_VEHICLES_API_URL}/${rangeCode}?vehicle_type=PRECON`;
         const response = await axios.get(modelDetailUrl);
         const preConId = Object.values(response.data).map(item => item.id);
         setPreconData(Object.values(preConId));
-
+        preConId?.map((item) => setPreconId(item?.id));
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
       } catch (error) {
@@ -130,8 +131,33 @@ export default function () {
       }
     };
 
-    fetchVehicle();
+    fetchVehicles();
 }, [rangeCode]);
+
+const PRECON_ID_VEHICLE_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/vehicle/${MARKET_SEGMENT}`
+useEffect(() =>{
+  const fetchVehicleByPreConId = async () => {
+    if (!preconId) return;
+    try {
+      const modelDetailUrl = `${PRECON_ID_VEHICLE_API_URL}/${preconId}`;
+      const response = await axios.get(modelDetailUrl);
+      const vehicleData = response.data;
+      const vehicleName = [];
+      vehicleName.push(vehicleData.name);
+      setVehicleTypeData(vehicleName);
+      const connection = await attach({ id: priConExtensionId });
+      setGuestConnection(connection);
+    } catch (error) {
+      console.error('Error fetching details for model', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchVehicleByPreConId();
+}, [preconId]);
+
+
 
   return (
     <Provider theme={lightTheme} colorScheme="light">
@@ -146,7 +172,7 @@ export default function () {
             isRequired
           >
             {carSerieses.map((item) => (
-              <Item key={item} value={item}>{item}</Item>
+               <Item textValue={item} key={item}>{item}</Item>
             ))}
           </Picker>
           <Picker
@@ -155,10 +181,11 @@ export default function () {
             onSelectionChange={onCarModelRangeChangeHandler}
             placeholder="Select a model"
             isRequired
+            isDisabled={!selectedCarSeries}
             selectedKey={selectedCarModelRange}
           >
             {carModelRange?.map((rangeCode) => (
-              <Item key={rangeCode}>{rangeCode}</Item>
+              <Item  textValue={rangeCode} key={rangeCode}>{rangeCode}</Item>
             ))}
           </Picker>
           <Picker
@@ -167,12 +194,26 @@ export default function () {
             onSelectionChange={onPreconChangeHandler}
             placeholder="Select a Precon Id"
             isRequired
+            isDisabled={!selectedCarModelRange}
             selectedKey={selectedPrecon}
           >
-            {preConData?.map((item) => (
-              <Item key={item} value={item}>{item}</Item>
+            {preconData?.map((item) => (
+              <Item key={item} textValue={item}>{item}</Item>
             ))}
           </Picker>
+          {/* <Picker
+            label="Vehicle Type"
+            necessityIndicator="label"
+            onSelectionChange={onVehicleChangeHandler}
+            placeholder="Select a Vehicle Type"
+            isRequired
+            isDisabled={!selectedPrecon}
+            selectedKey={selectedVehicleType}
+          >
+            {vehicleTypeData?.map((name) => (
+              <Item key={name} textValue={name}>{name}</Item>
+            ))}
+          </Picker> */}
         </Form>
         <View isHidden={!loading}>
           <Flex
