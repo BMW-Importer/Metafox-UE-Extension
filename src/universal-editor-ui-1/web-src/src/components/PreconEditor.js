@@ -169,7 +169,7 @@ export default function () {
             selectedKey={selectedCarSeries}
             isRequired
           >
-            {carSerieses.map((item) => (
+            {[...new Set(carSerieses)].map((item) => (
               <Item textValue={item} key={item}>{item}</Item>
             ))}
           </Picker>
@@ -182,7 +182,7 @@ export default function () {
             isDisabled={!selectedCarSeries}
             selectedKey={selectedCarModelRange}
           >
-            {carModelRange?.map((rangeCode) => (
+            {[...new Set(carModelRange)]?.map((rangeCode) => (
               <Item textValue={rangeCode} key={rangeCode}>{rangeCode}</Item>
             ))}
           </Picker>

@@ -200,7 +200,7 @@ export default function () {
             selectedKey={selectedCarSeries}
             isRequired
           >
-            {carSerieses.map((item) => (
+            {[...new Set(carSerieses)]?.map((item) => (
               <Item key={item} value={item}>{item}</Item>
             ))}
           </Picker>
@@ -229,7 +229,7 @@ export default function () {
             selectedKey={selectedCarModels}
             isDisabled={!selectedCarModelRange}
           >
-            {applicableCarModels?.map((modelCode) => (
+            {[...new Set(applicableCarModels)]?.map((modelCode) => (
               <Item key={modelCode}>{modelCode}</Item>
             ))}
           </Picker>

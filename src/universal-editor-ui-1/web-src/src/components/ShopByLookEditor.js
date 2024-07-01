@@ -173,7 +173,7 @@ import {
               selectedKey={selectedCarSeries}
               isRequired
             >
-              {carSerieses.map((item) => (
+              {[...new Set(carSerieses)]?.map((item) => (
                  <Item textValue={item} key={item}>{item}</Item>
               ))}
             </Picker>
@@ -186,20 +186,20 @@ import {
               isDisabled={!selectedCarSeries}
               selectedKey={selectedCarModelRange}
             >
-              {carModelRange?.map((rangeCode) => (
+              {[...new Set(carModelRange)]?.map((rangeCode) => (
                 <Item  textValue={rangeCode} key={rangeCode}>{rangeCode}</Item>
               ))}
             </Picker>
             <Picker
-              label="ShopByLook ID"
+              label="Shop By Look"
               necessityIndicator="label"
               onSelectionChange={onShopByLookChangeHandler}
-              placeholder="Select a ShopByLook Id"
+              placeholder="Select a ShopByLook"
               isRequired
               isDisabled={!selectedCarModelRange}
               selectedKey={selectedShopbylook}
             >
-              {shopbylookData?.map((item) => (
+              {[...new Set(shopbylookData)]?.map((item) => (
                 <Item key={item} textValue={item}>{item}</Item>
               ))}
             </Picker>
