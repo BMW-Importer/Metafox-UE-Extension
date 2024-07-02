@@ -135,9 +135,16 @@ useEffect(() => {
       });
 
       const vehiclesData = await Promise.all(vehicleDataPromises);
-
-      const vehicleNames = vehiclesData.map(vehicle => `${vehicle.id}, ${vehicle.name}, ${vehicle.headline}`);
-      setVehicleTypeData(vehicleNames);
+      const vehicles = vehiclesData.map(vehicle => {
+        const { id, name, headline } = vehicle;
+        let parts = [];
+        if (id) parts.push(id);
+        if (name) parts.push(name);
+        if (headline) parts.push(headline);
+        return parts.join(', ');
+      
+    });
+      setVehicleTypeData(vehicles);
 
       const connection = await attach({ id: priConExtensionId });
       setGuestConnection(connection);
@@ -199,7 +206,7 @@ useEffect(() => {
               ))
             ) : (
               <Item textValue="(NO Value)">
-                (NO Vehicle Find)
+                (NO Value Find)
               </Item>
             )}
           </Picker>
