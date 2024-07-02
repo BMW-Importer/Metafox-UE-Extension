@@ -163,6 +163,7 @@ import {
               necessityIndicator="label"
               onSelectionChange={onCarSeriesChangeHandler}
               placeholder="Select a series"
+              description="Defines the Series and related Model Range context."
               selectedKey={selectedCarSeries}
               isRequired
             >
@@ -176,6 +177,7 @@ import {
               onSelectionChange={onCarModelRangeChangeHandler}
               placeholder="Select a model range"
               isRequired
+              description="Defines the Series and related Model Range context."
               isDisabled={!selectedCarSeries}
               selectedKey={selectedCarModelRange}
             >
@@ -188,6 +190,7 @@ import {
               necessityIndicator="label"
               onSelectionChange={onVehicleChangeHandler}
               placeholder="Shop the Look"
+              description="Defines the specific vehicle to be displayed."
               isRequired
               isDisabled={!selectedCarModelRange}
               selectedKey={selectedVehicleType}

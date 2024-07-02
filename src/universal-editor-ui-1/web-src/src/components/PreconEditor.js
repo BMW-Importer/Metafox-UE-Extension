@@ -142,7 +142,6 @@ useEffect(() => {
         if (name) parts.push(name);
         if (headline) parts.push(headline);
         return parts.join(', ');
-      
     });
       setVehicleTypeData(vehicles);
 
@@ -170,6 +169,7 @@ useEffect(() => {
             placeholder="Select a series"
             selectedKey={selectedCarSeries}
             isRequired
+            description="Defines the Series and related Model Range context"
           >
             {[...new Set(carSerieses)]?.map((item) => (
                <Item textValue={item} key={item}>{item}</Item>
@@ -181,6 +181,7 @@ useEffect(() => {
             onSelectionChange={onCarModelRangeChangeHandler}
             placeholder="Select a model"
             isRequired
+            description="Defines the Series and related Model Range context."
             isDisabled={!selectedCarSeries}
             selectedKey={selectedCarModelRange}
           >
@@ -194,6 +195,7 @@ useEffect(() => {
             onSelectionChange={onVehicleChangeHandler}
             placeholder="Select a PreCon Id"
             isRequired
+            description="Defines the specific vehicle to be displayed."
             isDisabled={!selectedCarModelRange}
             selectedKey={selectedVehicleType}
           >
