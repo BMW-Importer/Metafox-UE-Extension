@@ -7,7 +7,9 @@ import ErrorBoundary from "react-error-boundary";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import ExtensionRegistration from "./ExtensionRegistration";
 import MetadataEditor from "./MetadataEditor";
+import PreconEditor from "./PreconEditor";
 import TypeRenderer from "./TypeRenderer";
+import ShopByLookEditor from "./ShopByLookEditor";
 
 function App() {
   return (
@@ -22,6 +24,14 @@ function App() {
           <Route
             exact path="metadata-editor"
             element={<MetadataEditor />}
+          />
+          <Route
+            exact path="precon-editor"
+            element={<PreconEditor />}
+          />
+          <Route
+            exact path="shopbylook-editor"
+            element={<ShopByLookEditor />}
           />
            <Route
                 exact path="renderer/:rendererId"

@@ -37,8 +37,6 @@ export default function () {
   const [modelCode, setModelCode] = useState();
   const [vehicleData, setVehicleData] = useState([]);
   const [selectedTransmissionCode, setSelectedTransmissionCode] = useState();
-  const [transmissionData, setTransmissionData] = useState();
-  const [applicableCarTransmission, setApplicableTransmission] = useState([]);
   const [carModelByTransmission, setCarModelByTransmission] = useState({});
 
   let [selected, setSelected] = useState(false);
@@ -52,7 +50,6 @@ export default function () {
   const onCarModelsChangeHandler = (value) => {
     setSelectedCarModels(value);
     setModelCode(value);
-    guestConnection?.host?.field.onChange(value);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}, ${selected},`);
 
   };
@@ -203,7 +200,7 @@ export default function () {
             selectedKey={selectedCarSeries}
             isRequired
           >
-            {carSerieses.map((item) => (
+            {[...new Set(carSerieses)]?.map((item) => (
               <Item key={item} value={item}>{item}</Item>
             ))}
           </Picker>
@@ -232,7 +229,7 @@ export default function () {
             selectedKey={selectedCarModels}
             isDisabled={!selectedCarModelRange}
           >
-            {applicableCarModels?.map((modelCode) => (
+            {[...new Set(applicableCarModels)]?.map((modelCode) => (
               <Item key={modelCode}>{modelCode}</Item>
             ))}
           </Picker>

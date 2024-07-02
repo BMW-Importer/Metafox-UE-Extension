@@ -23,7 +23,26 @@ function ExtensionRegistration() {
                 header: 'Metadata Editor',
                 hotkey: 'M',
                 url: "/index.html#/metadata-editor",
+              },
+              {
+                extension: 'precon-editor',
+                id: 'precon-editor',
+                label: 'Precon Editor',
+                icon: 'FileGear',
+                header: 'Precon Editor',
+                hotkey: 'M',
+                url: "/index.html#/precon-editor",
+              },
+              {
+                extension: 'shopbylook-editor',
+                id: 'shopbylook-editor',
+                label: 'ShopByLook Editor',
+                icon: 'FileGear',
+                header: 'ShopByLook Editor',
+                hotkey: 'M',
+                url: "/index.html#/shopbylook-editor",
               }
+
             ];
           },
         },
@@ -37,6 +56,14 @@ function ExtensionRegistration() {
               {
                 dataType: "customtype",
                 url: '/#/metadata-editor',
+              },
+              {
+                dataType: "preconcustomtype",
+                url: '/#/precon-editor',
+              },
+              {
+                dataType: "shopbylookcustomtype",
+                url: '/#/shopbylook-editor',
               },
             ];
           },
