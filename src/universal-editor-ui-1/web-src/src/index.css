@@ -7,7 +7,7 @@ html,
 body {
   margin: 0;
 }
-.precon-form {
+.precon-form, .shop-the-look-form {
   .A-HlBa_spectrum-FieldLabel span {
     display: none;
   }

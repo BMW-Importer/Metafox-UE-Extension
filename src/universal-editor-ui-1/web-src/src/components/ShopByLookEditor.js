@@ -28,19 +28,14 @@ import {
   
     const [seriesCode,setSeriesCode]= useState('');
     const [rangeCode,setRangeCode]= useState('');
-    const [shopbylookID,setShopbylookID]= useState('');
+    const [shopbylookID,setShopbylookID]= useState([]);
   
     
     const [carModelRange, setCarModelRange] = useState([]);
     const [selectedCarModelRange, setSelectedCarModelRange] = useState('');
-  
-    const [shopbylookData, setShopbylookData] = useState([]);
-    const [selectedShopbylook, setSelectedShopbylook] = useState('');
-  
+
     const [vehicleTypeData, setVehicleTypeData] = useState([]);
     const [selectedVehicleType, setSelectedVehicleType] = useState('');
-  
-  
   
     const onCarSeriesChangeHandler = (value) => {
       console.log("onChange on extension side", value);
@@ -56,17 +51,10 @@ import {
       guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
     };
   
-    const onShopByLookChangeHandler = (value) => {
-      console.log("onChange on extension side", value);
-      setSelectedShopbylook(value);
-      setShopbylookID(value);
-      guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
-    };
-  
     const onVehicleChangeHandler = (value) => {
       console.log("onChange on extension side", value);
       setSelectedVehicleType(value);
-      guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${selectedShopbylook}, ${value}`);
+      guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
     };
   
     useEffect(() => {
@@ -112,8 +100,6 @@ import {
       fetchModelRange();
     }, [seriesCode]);
   
-   // https://productdata.api.bmw/pdh/precons/v1.0/vehicles/bmw+marketDE+bmw_de+de_DE/F40?vehicle_type=SHOP_THE_LOOK
-
     const SHOPBYLOOK_VEHICLES_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/vehicles/${MARKET_SEGMENT}`
     useEffect(() =>{
       const fetchVehicles = async () => {
@@ -121,9 +107,8 @@ import {
         try {
           const modelDetailUrl = `${SHOPBYLOOK_VEHICLES_API_URL}/${rangeCode}?vehicle_type=SHOP_THE_LOOK`;
           const response = await axios.get(modelDetailUrl);
-          const shopByLookID = Object.values(response.data).map(item => item.id);
-          setShopbylookData(Object.values(shopByLookID));
-          shopByLookID?.map((item) => setShopbylookID(item?.id));
+          const shopByLookID = Object.values(response?.data).map(item => item?.id);
+          setShopbylookID(shopByLookID);
           const connection = await attach({ id: shopByLookExtensionID });
           setGuestConnection(connection);
         } catch (error) {
@@ -139,15 +124,19 @@ import {
   const SHOPBYLOOK_ID_VEHICLE_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/vehicle/${MARKET_SEGMENT}`
   useEffect(() =>{
     const fetchVehicleByPreConId = async () => {
-      if (!shopbylookID) return;
+      if (!shopbylookID.length) return;
       try {
-        const modelDetailUrl = `${SHOPBYLOOK_ID_VEHICLE_API_URL}/${shopbylookID}`;
-        const response = await axios.get(modelDetailUrl);
-        const vehicleData = response.data;
-        const vehicleName = [];
-        vehicleName.push(vehicleData.name);
-        setVehicleTypeData(vehicleName);
-        const connection = await attach({ id: shopByLookExtensionID });
+        const vehicleDataPromises = shopbylookID.map(async shopbylookID => {
+          const modelDetailUrl = `${SHOPBYLOOK_ID_VEHICLE_API_URL}/${shopbylookID}`;
+          const response = await axios.get(modelDetailUrl);
+          return response.data;
+        });
+  
+        const vehiclesData = await Promise.all(vehicleDataPromises);
+        const vehicleNames = vehiclesData.map(vehicle => `${vehicle.id}, ${vehicle.name}, ${vehicle.headline}`);
+        setVehicleTypeData(vehicleNames);
+  
+        const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
       } catch (error) {
         console.error('Error fetching details for model', error);
@@ -159,12 +148,10 @@ import {
     fetchVehicleByPreConId();
   }, [shopbylookID]);
   
-  
-  
     return (
       <Provider theme={lightTheme} colorScheme="light">
         <Flex direction="column">
-          <Form isHidden={loading}>
+          <Form isHidden={loading}  UNSAFE_className="shop-the-look-form">
             <Picker
               label="Car Series"
               necessityIndicator="label"
@@ -191,31 +178,18 @@ import {
               ))}
             </Picker>
             <Picker
-              label="Shop By Look"
-              necessityIndicator="label"
-              onSelectionChange={onShopByLookChangeHandler}
-              placeholder="Select a ShopByLook"
-              isRequired
-              isDisabled={!selectedCarModelRange}
-              selectedKey={selectedShopbylook}
-            >
-              {[...new Set(shopbylookData)]?.map((item) => (
-                <Item key={item} textValue={item}>{item}</Item>
-              ))}
-            </Picker>
-            {/* <Picker
-              label="Vehicle Type"
+              label="Shop the Look"
               necessityIndicator="label"
               onSelectionChange={onVehicleChangeHandler}
-              placeholder="Select a Vehicle Type"
+              placeholder="Shop the Look"
               isRequired
-              isDisabled={!selectedShopbylook}
+              isDisabled={!selectedCarModelRange}
               selectedKey={selectedVehicleType}
             >
-              {vehicleTypeData?.map((name) => (
+              {[...new Set(vehicleTypeData)]?.map((name) => (
                 <Item key={name} textValue={name}>{name}</Item>
               ))}
-            </Picker> */}
+            </Picker>
           </Form>
           <View isHidden={!loading}>
             <Flex
