@@ -159,7 +159,7 @@ import {
         <Flex direction="column">
           <Form isHidden={loading}  UNSAFE_className="shop-the-look-form">
             <Picker
-              label="Car Series"
+              label="Series"
               necessityIndicator="label"
               onSelectionChange={onCarSeriesChangeHandler}
               placeholder="Select a series"
@@ -171,10 +171,10 @@ import {
               ))}
             </Picker>
             <Picker
-              label="Car Model"
+              label="Model Range"
               necessityIndicator="label"
               onSelectionChange={onCarModelRangeChangeHandler}
-              placeholder="Select a model"
+              placeholder="Select a model range"
               isRequired
               isDisabled={!selectedCarSeries}
               selectedKey={selectedCarModelRange}
@@ -184,7 +184,7 @@ import {
               ))}
             </Picker>
             <Picker
-              label="Shop the Look"
+              label="Shop the Look ID"
               necessityIndicator="label"
               onSelectionChange={onVehicleChangeHandler}
               placeholder="Shop the Look"

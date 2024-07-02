@@ -164,7 +164,7 @@ useEffect(() => {
       <Flex direction="column">
         <Form isHidden={loading}  UNSAFE_className="precon-form">
           <Picker
-            label="Car Series"
+            label="Series"
             necessityIndicator="label"
             onSelectionChange={onCarSeriesChangeHandler}
             placeholder="Select a series"
@@ -176,7 +176,7 @@ useEffect(() => {
             ))}
           </Picker>
           <Picker
-            label="Car Model"
+            label="Model Range"
             necessityIndicator="label"
             onSelectionChange={onCarModelRangeChangeHandler}
             placeholder="Select a model"
@@ -189,10 +189,10 @@ useEffect(() => {
             ))}
           </Picker>
           <Picker
-            label="Precon Id"
+            label="PreCon ID"
             necessityIndicator="label"
             onSelectionChange={onVehicleChangeHandler}
-            placeholder="Select a Precon Id"
+            placeholder="Select a PreCon Id"
             isRequired
             isDisabled={!selectedCarModelRange}
             selectedKey={selectedVehicleType}
