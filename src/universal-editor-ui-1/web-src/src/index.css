@@ -7,8 +7,16 @@ html,
 body {
   margin: 0;
 }
-.precon-form, .shop-the-look-form {
+.precon-form, .shop-the-look-form, .meta-data-form {
   .A-HlBa_spectrum-FieldLabel span {
     display: none;
   }
+  .Checkbox-helper{
+    font-size: 12px;
+    font-weight: 400;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
 }
+
+

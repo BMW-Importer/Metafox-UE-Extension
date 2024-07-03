@@ -191,7 +191,7 @@ export default function () {
   return (
     <Provider theme={lightTheme} colorScheme="light">
       <Flex direction="column">
-        <Form isHidden={loading}>
+        <Form isHidden={loading}  UNSAFE_className="meta-data-form">
           <Picker
             label="Car Series"
             necessityIndicator="label"
@@ -199,6 +199,7 @@ export default function () {
             placeholder="Select a series"
             selectedKey={selectedCarSeries}
             isRequired
+             description="Defines the Series and related Model Range context"
           >
             {[...new Set(carSerieses)]?.map((item) => (
               <Item key={item} value={item}>{item}</Item>
@@ -212,6 +213,7 @@ export default function () {
             isRequired
             selectedKey={selectedCarModelRange}
             isDisabled={!selectedCarSeries}
+             description="Defines the Series and related Model Range context"
           >
             {[...new Set(applicableCarModelRange)].map((modelrangeCode) => (
               <Item key={modelrangeCode}>
@@ -228,6 +230,7 @@ export default function () {
             isRequired
             selectedKey={selectedCarModels}
             isDisabled={!selectedCarModelRange}
+             description="Defines the Model Code context. The values will be populated by WDH based on the previous selections."
           >
             {[...new Set(applicableCarModels)]?.map((modelCode) => (
               <Item key={modelCode}>{modelCode}</Item>
@@ -236,6 +239,7 @@ export default function () {
           <Checkbox isSelected={selected} onChange={setSelected}>
             Enable Technical Data
           </Checkbox>
+          <p className="Checkbox-helper">Defines if technical data is enabled.</p>
           {selected && <Picker
             label="Transmission"
             necessityIndicator="label"
@@ -244,6 +248,7 @@ export default function () {
             isRequired
             selectedKey={selectedTransmissionCode}
             isDisabled={!selectedCarModels}
+            description="Defines the transmission type. The values will be populated by WDH based on the previous selections."
           >
             {carModelByTransmission[modelCode]?.map((transmission) => (
               <Item key={transmission} value={transmission}>{transmission}</Item>
