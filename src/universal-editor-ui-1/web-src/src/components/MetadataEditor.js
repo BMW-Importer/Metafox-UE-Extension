@@ -23,40 +23,59 @@ const CAR_MODEL_API_URL = `${BASE_URL}${MARKET_SEGMENT}${LATEST}`;
 export default function () {
   const [guestConnection, setGuestConnection] = useState();
   const [loading, setLoading] = useState(true);
-  const [carModelRange, setCarModelRange] = useState();
-  const [applicableCarModelRange, setApplicableCarModelRange] = useState([]);
+  const [carModelRange, setCarModelRange] = useState([]);
   const [selectedCarModelRange, setSelectedCarModelRange] = useState();
+  const [seriesCode,setSeriesCode]= useState('');
 
   const [carSerieses, setCarSerieses] = useState([]);
   const [selectedCarSeries, setSelectedCarSeries] = useState();
 
-  const [carModels, setCarModels] = useState();
-  const [selectedCarModels, setSelectedCarModels] = useState();
-  const [applicableCarModels, setApplicableCarModels] = useState([]);
 
+  const [carModels, setCarModels] = useState([]);
   const [modelCode, setModelCode] = useState();
+  const [selectedCarModels, setSelectedCarModels] = useState();
+
+  
   const [vehicleData, setVehicleData] = useState([]);
   const [selectedTransmissionCode, setSelectedTransmissionCode] = useState();
   const [carModelByTransmission, setCarModelByTransmission] = useState({});
 
   let [selected, setSelected] = useState(false);
+  const [data, setData] = useState();
 
+  const onCarSeriesChangeHandler = (value) => {
+    setSelectedCarSeries(value);
+    setCarModelRange([]);
+    localStorage.setItem('selectedCarSeries', value);
+    localStorage.removeItem('selectedCarModelRange');
+    guestConnection?.host?.field.onChange(value);
+  };
 
   const onCarModelRangeChangeHandler = (value) => {
     setSelectedCarModelRange(value);
-    guestConnection?.host?.field.onChange(value)
+    setSeriesCode(value);
+    setCarModels([]);
+    localStorage.setItem('selectedCarModelRange', value);
+    localStorage.removeItem('selectedCarModels');
+    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
+
   };
 
   const onCarModelsChangeHandler = (value) => {
     setSelectedCarModels(value);
-    setModelCode(value);
+    console.log(value);
+    setCarModelByTransmission([]);
+    localStorage.setItem('selectedCarModels', value);
+    localStorage.removeItem('selectedTransmissionCode');
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}, ${selected},`);
 
   };
   const onCarTransmissionChangeHandler = (value) => {
     setSelectedTransmissionCode(value);
+    localStorage.setItem('selectedTransmissionCode', value);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${selectedCarModels}, ${selected}, ${value}`);
   };
+
   const URL = 'https://productdata.api.bmw/pdh/technicaldata/v2.0/model/bmw+marketB4R1+bmw_rs+sr_RS/latest';
 
   useEffect(() => {
@@ -64,80 +83,20 @@ export default function () {
       try {
         const response = await fetch(CAR_MODEL_API_URL);
         const data = await response.json();
-        data?.models?.map((model) => setModelCode(model?.modelCode));
-        const carModelRangeGroupedByCarSeries = data?.models?.reduce(
-          (result, item) => {
-            const seriesCode = item.seriesCode;
-            if (!result[seriesCode]) {
-              result[seriesCode] = [];
-            }
-            result[seriesCode].push(item.modelRangeCode);   //rangecode
-            return result;
-          },
-          {}
-        );
+        setData(data);
+        const seriesCodes = data?.models?.map((item) => item?.seriesCode);
+        setCarSerieses(seriesCodes);
+        console.log(data);
 
-        const carModelGroupedByModelRange = data?.models?.reduce(
-          (result, item) => {
-            const seriesCode = item.seriesCode;
-            if (!result[seriesCode]) {
-              result[seriesCode] = [];
-            }
-            result[seriesCode].push(item.modelCode);   //modelcode
-            return result;
-          },
-          {}
-        );
-        setCarModelRange(carModelRangeGroupedByCarSeries);
-        setCarSerieses(Object.keys(carModelRangeGroupedByCarSeries));
-
-        //model
-        setCarModels(carModelGroupedByModelRange);
-        setCarSerieses(Object.keys(carModelGroupedByModelRange));
+        const savedCarSeries = localStorage.getItem('selectedCarSeries');
+        if (savedCarSeries) {
+          setSelectedCarSeries(savedCarSeries);
+        }
 
         const connection = await attach({ id: extensionId });
         setGuestConnection(connection);
 
-        const currrentCarModelrange = await connection.host.field.getValue();
-
-        if (carModelRangeGroupedByCarSeries && currrentCarModelrange) {
-          let currentCarSeries = null;
-          for (let seriesCode in carModelRangeGroupedByCarSeries) {
-            if (
-              carModelRangeGroupedByCarSeries[seriesCode].includes(currrentCarModelrange)
-            ) {
-              currentCarSeries = seriesCode;
-              break;
-            }
-          }
-
-          // get field value
-          setSelectedCarSeries(currentCarSeries);
-          setSelectedCarModelRange(currrentCarModelrange);
-          setApplicableCarModelRange(carModelRangeGroupedByCarSeries[currentCarSeries]);
-
-        }
-        //model
-        const currrentCarModel = await connection.host.field.getValue();
-
-        if (carModelGroupedByModelRange && currrentCarModel) {
-          let currentCarSeries = null;
-          for (let seriesCode in carModelGroupedByModelRange) {
-            if (
-              carModelGroupedByModelRange[seriesCode].includes(currrentCarModel)
-            ) {
-              currentCarSeries = seriesCode;
-              break;
-            }
-          }
-
-          //model
-          setSelectedCarSeries(currentCarSeries);
-          setSelectedCarModels(currrentCarModel);
-          setApplicableCarModels(carModelGroupedByModelRange[currentCarSeries]);
-        }
       } catch (error) {
-        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -145,6 +104,60 @@ export default function () {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const handleSeriesChange = async () => {
+      if (selectedCarSeries) {
+        try {
+          const modelRange = data?.models?.filter(item => item?.seriesCode === selectedCarSeries).map(item => item?.modelRangeCode);
+          setCarModelRange(modelRange);
+  
+          const savedModelRange = localStorage.getItem('selectedCarModelRange');
+          if (savedModelRange) {
+            setSelectedCarModelRange(savedModelRange);
+          }
+  
+          const connection = await attach({ id: extensionId });
+          setGuestConnection(connection);
+        } catch (error) {
+        }
+      }
+    };
+  
+    handleSeriesChange();
+  }, [selectedCarSeries, data]);
+  
+  useEffect(() => {
+    const handleModelRangeChange = async () => {
+      if (selectedCarModelRange) {
+        try {
+          const modelCodes = data?.models?.filter(item => item?.modelRangeCode === selectedCarModelRange);
+          const modelCodesDetails = modelCodes.map((item, index) => {
+            const {shortName, seriesCode, shortRangeName, modelCode } = item;
+            // return `${shortName}(${seriesCode}/${shortRangeName}/${modelCode})`;
+            return {
+              displayString: `${shortName}(${seriesCode}/${shortRangeName}/${modelCode})`,
+              modelCode
+            };
+          });
+          setCarModels(modelCodesDetails);
+          
+
+          const savedCarModels = localStorage.getItem('selectedCarModels');
+          if (savedCarModels) {
+            setSelectedCarModels(savedCarModels);
+          }
+  
+          const connection = await attach({ id: extensionId });
+          setGuestConnection(connection);
+        } catch (error) {
+        }
+      }
+    };
+  
+    handleModelRangeChange();
+  }, [selectedCarModelRange, data, extensionId]);
+  
 
   useEffect(() => {
     const fetchVehiclesData = async () => {
@@ -155,7 +168,6 @@ export default function () {
         const modelDetail = modelDetailResponse?.data;
         setVehicleData(modelDetail?.vehicles);
       } catch (error) {
-        console.error('Error fetching details for model', error);
       } finally {
         setLoading(false);
       }
@@ -166,36 +178,69 @@ export default function () {
 
 
   useEffect(() => {
-    if (vehicleData.length > 0) {
-      const groupedByTransmission = vehicleData.reduce((result, vehicle) => {
-        const { transmissionCode } = vehicle;
-        if (!result[modelCode]) {
-          result[modelCode] = [];
+    const groupByTransmission = async () => {
+      if (vehicleData.length > 0) {
+        try {
+          const groupedByTransmission = vehicleData.reduce((result, vehicle) => {
+            const { transmissionCode } = vehicle;
+            if (!result[modelCode]) {
+              result[modelCode] = [];
+            }
+            if (!result[modelCode].includes(transmissionCode)) {
+              result[modelCode].push(transmissionCode);
+            }
+            return result;
+          }, {});
+          setCarModelByTransmission(groupedByTransmission);
+  
+          const savedModelByTransmission = localStorage.getItem('selectedTransmissionCode');
+          if (savedModelByTransmission) {
+            setSelectedTransmissionCode(savedModelByTransmission);
+          }
+  
+          const connection = await attach({ id: extensionId });
+          setGuestConnection(connection);
+        } catch (error) {
         }
-        if (!result[modelCode].includes(transmissionCode)) {
-          result[modelCode].push(transmissionCode);
-        }
-        return result;
-      }, {});
-      setCarModelByTransmission(groupedByTransmission);
-    }
-  }, [vehicleData, modelCode]);
+      }
+    };
+  
+    groupByTransmission();
+  }, [vehicleData, modelCode, extensionId]);
+  
 
   useEffect(() => {
-    if (selectedCarSeries) {
-      setApplicableCarModelRange(carModelRange[selectedCarSeries]);
-      setApplicableCarModels(carModels[selectedCarSeries]);
+    // Enable dropdowns if values are stored in localStorage
+    const savedCarSeries = localStorage.getItem('selectedCarSeries');
+    const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
+    const savedCarModel = localStorage.getItem('selectedCarModels');
+    const savedModelByTransmission = localStorage.getItem('selectedTransmissionCode');
+    
+    if (savedCarSeries) {
+      setSelectedCarSeries(savedCarSeries);
+      setSeriesCode(savedCarSeries);
     }
-  }, [selectedCarSeries]);
+    if (savedCarModelRange) {
+      setSelectedCarModelRange(savedCarModelRange);
+    }
+    if (savedCarModel) {
+      setSelectedCarModels(savedCarModel);
+      setModelCode(savedCarModel);
+    }
+
+    if (savedModelByTransmission) {
+      setSelectedCarModels(savedModelByTransmission);
+    }
+  }, []);
 
   return (
     <Provider theme={lightTheme} colorScheme="light">
       <Flex direction="column">
         <Form isHidden={loading}  UNSAFE_className="meta-data-form">
           <Picker
-            label="Car Series"
+            label="Series"
             necessityIndicator="label"
-            onSelectionChange={setSelectedCarSeries}
+            onSelectionChange={onCarSeriesChangeHandler}
             placeholder="Select a series"
             selectedKey={selectedCarSeries}
             isRequired
@@ -206,7 +251,7 @@ export default function () {
             ))}
           </Picker>
           <Picker
-            label="Car Model range"
+            label="Model Range"
             necessityIndicator="label"
             onSelectionChange={onCarModelRangeChangeHandler}
             placeholder="Select a model range"
@@ -215,7 +260,7 @@ export default function () {
             isDisabled={!selectedCarSeries}
              description="Defines the Series and related Model Range context"
           >
-            {[...new Set(applicableCarModelRange)].map((modelrangeCode) => (
+            {[...new Set(carModelRange)].map((modelrangeCode) => (
               <Item key={modelrangeCode}>
                 {modelrangeCode}
               </Item>
@@ -223,7 +268,7 @@ export default function () {
           </Picker>
 
           <Picker
-            label="Car Model"
+            label="Model"
             necessityIndicator="label"
             onSelectionChange={onCarModelsChangeHandler}
             placeholder="Select a model"
@@ -232,7 +277,7 @@ export default function () {
             isDisabled={!selectedCarModelRange}
              description="Defines the Model Code context. The values will be populated by WDH based on the previous selections."
           >
-            {[...new Set(applicableCarModels)]?.map((modelCode) => (
+            {[...new Set(carModels)]?.map((modelCode) => (
               <Item key={modelCode}>{modelCode}</Item>
             ))}
           </Picker>
@@ -241,10 +286,10 @@ export default function () {
           </Checkbox>
           <p className="Checkbox-helper">Defines if technical data is enabled.</p>
           {selected && <Picker
-            label="Transmission"
+            label="Transmission Type"
             necessityIndicator="label"
             onSelectionChange={onCarTransmissionChangeHandler}
-            placeholder="Select a transmission"
+            placeholder="Select a transmission type"
             isRequired
             selectedKey={selectedTransmissionCode}
             isDisabled={!selectedCarModels}
