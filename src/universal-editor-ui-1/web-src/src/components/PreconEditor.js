@@ -40,15 +40,20 @@ export default function () {
   const [selected, setSelected] = useState(false);
 
   const onCarSeriesChangeHandler = (value) => {
+    const selectedCarSeries = carSerieses.find(model => model.description === value);
     console.log("onChange on extension side", value);
-    setSelectedCarSeries(value);
-    setSeriesCode(value);
-    setSelected(true);
-    setCarModelRange([]); // Clear car model range options
-    setSelectedCarModelRange(''); // Clear selected car model range
-    localStorage.setItem('selectedCarSeries', value);
-    localStorage.removeItem('selectedCarModelRange');
-    guestConnection?.host?.field.onChange(value);
+    console.log(carSerieses);
+    if (selectedCarSeries) {
+      const { description, seriesCode } = selectedCarSeries;
+      setSelectedCarSeries(description);
+      setSeriesCode(seriesCode);
+      setSelected(true);
+      setCarModelRange([]); // Clear car model range options
+      setSelectedCarModelRange(''); // Clear selected car model range
+      localStorage.setItem('selectedCarSeries', description);
+      //localStorage.removeItem('selectedCarModelRange');
+      guestConnection?.host?.field.onChange(description);
+  }
   };
   
   const onCarModelRangeChangeHandler = (value) => {
@@ -74,7 +79,7 @@ export default function () {
       try {
         const response = await fetch(PRECON_MODEL_API_URL);
         const data = await response.json();
-        const seriesCodes = Object.values(data).map(item => item.seriesCode);
+        const seriesCodes = Object.values(data).map(item => ({seriesCode:item.seriesCode, description:item.description}));
         setCarSerieses(Object.values(seriesCodes));
         seriesCodes?.map((item) => setSeriesCode(item?.seriesCode));
         const savedCarSeries = localStorage.getItem('selectedCarSeries');
@@ -214,7 +219,7 @@ useEffect(() => {
             description="Defines the Series and related Model Range context"
           >
             {[...new Set(carSerieses)]?.map((item) => (
-               <Item textValue={item} key={item}>{item}</Item>
+               <Item textValue={item.description} key={item.description}>{item.description}</Item>
             ))}
           </Picker>
           <Picker

@@ -11,41 +11,6 @@ function ExtensionRegistration() {
     const guestConnection = await register({
       id: extensionId,
       methods: {
-        rightPanel: {
-          addRails() {
-            return [
-              // @todo YOUR HEADER BUTTONS DECLARATION SHOULD BE HERE
-              {
-                extension: 'metadata-editor',
-                id: 'metadata-editor',
-                label: 'Metadata Editor',
-                icon: 'FileGear',
-                header: 'Metadata Editor',
-                hotkey: 'M',
-                url: "/index.html#/metadata-editor",
-              },
-              {
-                extension: 'precon-editor',
-                id: 'precon-editor',
-                label: 'Precon Editor',
-                icon: 'FileGear',
-                header: 'Precon Editor',
-                hotkey: 'M',
-                url: "/index.html#/precon-editor",
-              },
-              {
-                extension: 'shopbylook-editor',
-                id: 'shopbylook-editor',
-                label: 'ShopByLook Editor',
-                icon: 'FileGear',
-                header: 'ShopByLook Editor',
-                hotkey: 'M',
-                url: "/index.html#/shopbylook-editor",
-              }
-
-            ];
-          },
-        },
         canvas: {
           getRenderers() {
             return [
