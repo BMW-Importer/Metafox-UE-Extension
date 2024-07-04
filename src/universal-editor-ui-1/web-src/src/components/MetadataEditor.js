@@ -62,13 +62,16 @@ export default function () {
   };
 
   const onCarModelsChangeHandler = (value) => {
-    setSelectedCarModels(value);
-    console.log(value);
-    setCarModelByTransmission([]);
-    localStorage.setItem('selectedCarModels', value);
-    localStorage.removeItem('selectedTransmissionCode');
-    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}, ${selected},`);
-
+    const selectedModel = carModels.find(model => model.displayString === value);
+    if (selectedModel) {
+      const { displayString, modelCode } = selectedModel;
+      setSelectedCarModels(displayString);
+      setModelCode(modelCode);
+      setCarModelByTransmission([]);
+      localStorage.setItem('selectedCarModels', displayString);
+      localStorage.removeItem('selectedTransmissionCode');
+      guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${displayString}, ${selected},`);
+    }
   };
   const onCarTransmissionChangeHandler = (value) => {
     setSelectedTransmissionCode(value);
@@ -278,7 +281,9 @@ export default function () {
              description="Defines the Model Code context. The values will be populated by WDH based on the previous selections."
           >
             {[...new Set(carModels)]?.map((modelCode) => (
-              <Item key={modelCode}>{modelCode}</Item>
+              <Item key={modelCode.displayString} value={modelCode.displayString}>
+              {modelCode.displayString}
+            </Item>
             ))}
           </Picker>
           <Checkbox isSelected={selected} onChange={setSelected}>
