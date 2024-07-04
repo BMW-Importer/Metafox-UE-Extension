@@ -67,8 +67,8 @@ export default function () {
       const { displayString, modelCode } = selectedModel;
       setSelectedCarModels(displayString);
       setModelCode(modelCode);
-      setCarModelByTransmission([]);
       localStorage.setItem('selectedCarModels', displayString);
+      localStorage.setItem('selectedModelCode', modelCode);
       localStorage.removeItem('selectedTransmissionCode');
       guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${displayString}, ${selected},`);
     }
@@ -89,8 +89,6 @@ export default function () {
         setData(data);
         const seriesCodes = data?.models?.map((item) => item?.seriesCode);
         setCarSerieses(seriesCodes);
-        console.log(data);
-
         const savedCarSeries = localStorage.getItem('selectedCarSeries');
         if (savedCarSeries) {
           setSelectedCarSeries(savedCarSeries);
@@ -137,18 +135,19 @@ export default function () {
           const modelCodes = data?.models?.filter(item => item?.modelRangeCode === selectedCarModelRange);
           const modelCodesDetails = modelCodes.map((item, index) => {
             const {shortName, seriesCode, shortRangeName, modelCode } = item;
-            // return `${shortName}(${seriesCode}/${shortRangeName}/${modelCode})`;
             return {
               displayString: `${shortName}(${seriesCode}/${shortRangeName}/${modelCode})`,
               modelCode
             };
           });
           setCarModels(modelCodesDetails);
-          
 
           const savedCarModels = localStorage.getItem('selectedCarModels');
-          if (savedCarModels) {
+          const savedModelCode = localStorage.getItem('selectedModelCode');
+
+          if (savedCarModels && savedModelCode) {
             setSelectedCarModels(savedCarModels);
+            setModelCode(savedModelCode);
           }
   
           const connection = await attach({ id: extensionId });
@@ -160,7 +159,6 @@ export default function () {
   
     handleModelRangeChange();
   }, [selectedCarModelRange, data, extensionId]);
-  
 
   useEffect(() => {
     const fetchVehiclesData = async () => {
@@ -218,6 +216,8 @@ export default function () {
     const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
     const savedCarModel = localStorage.getItem('selectedCarModels');
     const savedModelByTransmission = localStorage.getItem('selectedTransmissionCode');
+    const savedModelCode = localStorage.getItem('selectedModelCode');
+
     
     if (savedCarSeries) {
       setSelectedCarSeries(savedCarSeries);
@@ -226,9 +226,9 @@ export default function () {
     if (savedCarModelRange) {
       setSelectedCarModelRange(savedCarModelRange);
     }
-    if (savedCarModel) {
+    if (savedCarModel && savedModelCode) {
       setSelectedCarModels(savedCarModel);
-      setModelCode(savedCarModel);
+      setModelCode(savedModelCode);
     }
 
     if (savedModelByTransmission) {

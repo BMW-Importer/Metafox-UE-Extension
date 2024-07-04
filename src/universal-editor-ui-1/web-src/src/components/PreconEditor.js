@@ -41,8 +41,6 @@ export default function () {
 
   const onCarSeriesChangeHandler = (value) => {
     const selectedCarSeries = carSerieses.find(model => model.description === value);
-    console.log("onChange on extension side", value);
-    console.log(carSerieses);
     if (selectedCarSeries) {
       const { description, seriesCode } = selectedCarSeries;
       setSelectedCarSeries(description);
@@ -51,13 +49,13 @@ export default function () {
       setCarModelRange([]); // Clear car model range options
       setSelectedCarModelRange(''); // Clear selected car model range
       localStorage.setItem('selectedCarSeries', description);
-      //localStorage.removeItem('selectedCarModelRange');
+      localStorage.setItem('selectedCode', seriesCode);
+      localStorage.removeItem('selectedCarModelRange');
       guestConnection?.host?.field.onChange(description);
   }
   };
   
   const onCarModelRangeChangeHandler = (value) => {
-    console.log("onChange on extension side", value);
     setSelectedCarModelRange(value);
     setRangeCode(value);
     setVehicleTypeData([]); // Clear vehicle type data
@@ -68,7 +66,6 @@ export default function () {
   };
 
   const onVehicleChangeHandler = (value) => {
-    console.log("onChange on extension side", value);
     setSelectedVehicleType(value);
     localStorage.setItem('selectedVehicleType', value);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
@@ -81,11 +78,11 @@ export default function () {
         const data = await response.json();
         const seriesCodes = Object.values(data).map(item => ({seriesCode:item.seriesCode, description:item.description}));
         setCarSerieses(Object.values(seriesCodes));
-        seriesCodes?.map((item) => setSeriesCode(item?.seriesCode));
         const savedCarSeries = localStorage.getItem('selectedCarSeries');
-        if (savedCarSeries) {
+        const savedSeries = localStorage.getItem('selectedCode');
+        if (savedCarSeries && savedSeries) {
           setSelectedCarSeries(savedCarSeries);
-          setSeriesCode(savedCarSeries);
+          setSeriesCode(savedSeries);
         }
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
@@ -109,11 +106,9 @@ export default function () {
         const modelDetail = modelDetailResponse?.data;
         const rangeCode = Object.values(modelDetail).map(item => item.modelRangeCode);
         setCarModelRange(Object.values(rangeCode));
-        rangeCode?.map((item) => setRangeCode(item?.modelRangeCode));
         const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
         if (savedCarModelRange) {
           setSelectedCarModelRange(savedCarModelRange);
-          setRangeCode(savedCarModelRange);
         }
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
@@ -189,10 +184,12 @@ useEffect(() => {
   const savedCarSeries = localStorage.getItem('selectedCarSeries');
   const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
   const savedVehicleType = localStorage.getItem('selectedVehicleType');
+  const savedSeries = localStorage.getItem('selectedCode');
 
-  if (savedCarSeries) {
+
+  if (savedCarSeries && savedSeries) {
     setSelectedCarSeries(savedCarSeries);
-    setSeriesCode(savedCarSeries);
+    setSeriesCode(savedSeries);
     setSelected(true);
   }
   if (savedCarModelRange) {
