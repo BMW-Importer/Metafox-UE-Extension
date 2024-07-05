@@ -213,7 +213,7 @@ useEffect(() => {
             placeholder="Select a series"
             selectedKey={selectedCarSeries}
             isRequired
-            description="Defines the Series and related Model Range context"
+            description="Defines the Series and related Model Range context."
           >
             {[...new Set(carSerieses)]?.map((item) => (
                <Item textValue={item.description} key={item.description}>{item.description}</Item>

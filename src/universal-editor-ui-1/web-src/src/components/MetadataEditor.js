@@ -43,6 +43,7 @@ export default function () {
   let [selected, setSelected] = useState(false);
   const [data, setData] = useState();
 
+
   const onCarSeriesChangeHandler = (value) => {
     setSelectedCarSeries(value);
     setCarModelRange([]);
@@ -155,6 +156,7 @@ export default function () {
         } catch (error) {
         }
       }
+      
     };
   
     handleModelRangeChange();
@@ -244,10 +246,10 @@ export default function () {
             label="Series"
             necessityIndicator="label"
             onSelectionChange={onCarSeriesChangeHandler}
-            placeholder="Select a series"
+            placeholder="Select a Series"
             selectedKey={selectedCarSeries}
             isRequired
-             description="Defines the Series and related Model Range context"
+             description="Defines the Series and related Model Range context."
           >
             {[...new Set(carSerieses)]?.map((item) => (
               <Item key={item} value={item}>{item}</Item>
@@ -257,11 +259,11 @@ export default function () {
             label="Model Range"
             necessityIndicator="label"
             onSelectionChange={onCarModelRangeChangeHandler}
-            placeholder="Select a model range"
+            placeholder="Select a Model Range"
             isRequired
             selectedKey={selectedCarModelRange}
             isDisabled={!selectedCarSeries}
-             description="Defines the Series and related Model Range context"
+             description="Defines the Series and related Model Range context."
           >
             {[...new Set(carModelRange)].map((modelrangeCode) => (
               <Item key={modelrangeCode}>
@@ -271,10 +273,10 @@ export default function () {
           </Picker>
 
           <Picker
-            label="Model"
+            label="Model Code"
             necessityIndicator="label"
             onSelectionChange={onCarModelsChangeHandler}
-            placeholder="Select a model"
+            placeholder="Select a Model Code"
             isRequired
             selectedKey={selectedCarModels}
             isDisabled={!selectedCarModelRange}
@@ -294,15 +296,12 @@ export default function () {
             label="Transmission Type"
             necessityIndicator="label"
             onSelectionChange={onCarTransmissionChangeHandler}
-            placeholder="Select a transmission type"
+            placeholder="Select a Transmission Type"
             isRequired
             selectedKey={selectedTransmissionCode}
             isDisabled={!selectedCarModels}
             description="Defines the transmission type. The values will be populated by WDH based on the previous selections."
           >
-            {/* {carModelByTransmission[modelCode]?.map((transmission) => (
-              <Item key={transmission} value={transmission}>{transmission}</Item>
-            ))} */}
             {carModelByTransmission[modelCode]?.length ? (
               carModelByTransmission[modelCode].map((transmission) => (
                 <Item key={transmission} value={transmission}>{transmission}</Item>
