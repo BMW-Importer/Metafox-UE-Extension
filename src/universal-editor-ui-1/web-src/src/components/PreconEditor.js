@@ -51,7 +51,7 @@ export default function () {
       localStorage.setItem('selectedCarSeries', description);
       localStorage.setItem('selectedCode', seriesCode);
       localStorage.removeItem('selectedCarModelRange');
-      guestConnection?.host?.field.onChange(description);
+      guestConnection?.host?.field.onChange(seriesCode);
   }
   };
   
