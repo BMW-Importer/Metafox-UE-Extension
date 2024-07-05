@@ -44,7 +44,7 @@ export default function () {
   const [data, setData] = useState();
 
   const [tenentValue, setTenentValue] = useState();
-  
+
 
   const onCarSeriesChangeHandler = (value) => {
     setSelectedCarSeries(value);
@@ -92,6 +92,9 @@ export default function () {
         console.log('Description:', metaTenant ? metaTenant.content : 'No description meta tag found.');
        } else {
         console.log('Cannot access parent document.');
+      }
+      if(tenentValue) {
+        console.log(tenentValue);
       }
     });
 
@@ -263,7 +266,7 @@ export default function () {
             placeholder="Select a series"
             selectedKey={selectedCarSeries}
             isRequired
-             description="Defines the Series and related Model Range context"
+             description="Defines the Series and related Model Range context."
           >
             {[...new Set(carSerieses)]?.map((item) => (
               <Item key={item} value={item}>{item}</Item>
@@ -277,7 +280,7 @@ export default function () {
             isRequired
             selectedKey={selectedCarModelRange}
             isDisabled={!selectedCarSeries}
-             description="Defines the Series and related Model Range context"
+             description="Defines the Series and related Model Range context."
           >
             {[...new Set(carModelRange)].map((modelrangeCode) => (
               <Item key={modelrangeCode}>
