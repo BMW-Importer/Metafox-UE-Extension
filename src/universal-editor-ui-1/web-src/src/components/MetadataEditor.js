@@ -263,7 +263,7 @@ export default function () {
             label="Series"
             necessityIndicator="label"
             onSelectionChange={onCarSeriesChangeHandler}
-            placeholder="Select a series"
+            placeholder="Select a Series"
             selectedKey={selectedCarSeries}
             isRequired
              description="Defines the Series and related Model Range context."
@@ -276,7 +276,7 @@ export default function () {
             label="Model Range"
             necessityIndicator="label"
             onSelectionChange={onCarModelRangeChangeHandler}
-            placeholder="Select a model range"
+            placeholder="Select a Model Range"
             isRequired
             selectedKey={selectedCarModelRange}
             isDisabled={!selectedCarSeries}
@@ -290,10 +290,10 @@ export default function () {
           </Picker>
 
           <Picker
-            label="Model"
+            label="Model Code"
             necessityIndicator="label"
             onSelectionChange={onCarModelsChangeHandler}
-            placeholder="Select a model"
+            placeholder="Select a Model Code"
             isRequired
             selectedKey={selectedCarModels}
             isDisabled={!selectedCarModelRange}
@@ -313,7 +313,7 @@ export default function () {
             label="Transmission Type"
             necessityIndicator="label"
             onSelectionChange={onCarTransmissionChangeHandler}
-            placeholder="Select a transmission type"
+            placeholder="Select a Transmission Type"
             isRequired
             selectedKey={selectedTransmissionCode}
             isDisabled={!selectedCarModels}
