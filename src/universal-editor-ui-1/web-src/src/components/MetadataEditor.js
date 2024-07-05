@@ -300,9 +300,17 @@ export default function () {
             isDisabled={!selectedCarModels}
             description="Defines the transmission type. The values will be populated by WDH based on the previous selections."
           >
-            {carModelByTransmission[modelCode]?.map((transmission) => (
+            {/* {carModelByTransmission[modelCode]?.map((transmission) => (
               <Item key={transmission} value={transmission}>{transmission}</Item>
-            ))}
+            ))} */}
+            {carModelByTransmission[modelCode]?.length ? (
+              carModelByTransmission[modelCode].map((transmission) => (
+                <Item key={transmission} value={transmission}>{transmission}</Item>
+              ))
+            ) : (
+              <Item value="No transmission code">No transmission code</Item>
+            )}
+
           </Picker>}
 
         </Form>
