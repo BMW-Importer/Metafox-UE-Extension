@@ -41,8 +41,8 @@ export default function () {
   const [carModelByTransmission, setCarModelByTransmission] = useState({});
 
   let [selected, setSelected] = useState(false);
-  const [data, setData] = useState();
 
+  const[data, setData] =useState(null);
 
   const onCarSeriesChangeHandler = (value) => {
     setSelectedCarSeries(value);
@@ -71,7 +71,7 @@ export default function () {
       localStorage.setItem('selectedCarModels', displayString);
       localStorage.setItem('selectedModelCode', modelCode);
       localStorage.removeItem('selectedTransmissionCode');
-      guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${displayString}, ${selected},`);
+      guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${modelCode}, ${selected},`);
     }
   };
   const onCarTransmissionChangeHandler = (value) => {

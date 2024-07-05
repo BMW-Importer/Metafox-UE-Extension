@@ -36,11 +36,18 @@ import {
 
     const [vehicleTypeData, setVehicleTypeData] = useState([]);
     const [selectedVehicleType, setSelectedVehicleType] = useState('');
+
+    const [selected, setSelected] = useState(false);
   
     const onCarSeriesChangeHandler = (value) => {
       console.log("onChange on extension side", value);
       setSelectedCarSeries(value);
       setSeriesCode(value);
+      setSelected(true);
+      setCarModelRange([]); // Clear car model range options
+      setSelectedCarModelRange(''); // Clear selected car model range
+      localStorage.setItem('selectedCarSeries', value);
+      localStorage.removeItem('selectedCarModelRange');
       guestConnection?.host?.field.onChange(value);
     };
     
@@ -48,12 +55,17 @@ import {
       console.log("onChange on extension side", value);
       setSelectedCarModelRange(value);
       setRangeCode(value);
+      setVehicleTypeData([]); // Clear vehicle type data
+    setSelectedVehicleType(''); 
+    localStorage.setItem('selectedCarModelRange', value);
+    localStorage.removeItem('selectedVehicleType');
       guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
     };
   
     const onVehicleChangeHandler = (value) => {
       console.log("onChange on extension side", value);
       setSelectedVehicleType(value);
+    localStorage.setItem('selectedVehicleType', value);
       guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
     };
   
@@ -64,7 +76,11 @@ import {
           const data = await response.json();
           const seriesCodes = Object.values(data).map(item => item.seriesCode);
           setCarSerieses(Object.values(seriesCodes));
-          seriesCodes?.map((item) => setSeriesCode(item?.seriesCode));
+          const savedCarSeries = localStorage.getItem('selectedCarSeries');
+          if (savedCarSeries) {
+            setSelectedCarSeries(savedCarSeries);
+            setSeriesCode(savedCarSeries);
+          }
           const connection = await attach({ id: shopByLookExtensionID });
           setGuestConnection(connection);
         } catch (error) {
@@ -87,6 +103,10 @@ import {
           const modelDetail = modelDetailResponse?.data;
           const rangeCode = Object.values(modelDetail).map(item => item.modelRangeCode);
           setCarModelRange(Object.values(rangeCode));
+          const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
+          if (savedCarModelRange) {
+            setSelectedCarModelRange(savedCarModelRange);
+          }
           rangeCode?.map((item) => setRangeCode(item?.modelRangeCode));
           const connection = await attach({ id: shopByLookExtensionID });
           setGuestConnection(connection);
@@ -141,6 +161,8 @@ import {
           return parts.join(', ');
         });
         setVehicleTypeData(vehicles);
+        const savedVehicleTypeData = localStorage.getItem('selectedVehicleType');
+        if (savedVehicleTypeData) setSelectedVehicleType(savedVehicleTypeData);
   
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
@@ -153,6 +175,26 @@ import {
   
     fetchVehicleByPreConId();
   }, [shopbylookID]);
+
+  useEffect(() => {
+    // Enable dropdowns if values are stored in localStorage
+    const savedCarSeries = localStorage.getItem('selectedCarSeries');
+    const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
+    const savedVehicleType = localStorage.getItem('selectedVehicleType');
+    
+    if (savedCarSeries) {
+      setSelectedCarSeries(savedCarSeries);
+      setSeriesCode(savedCarSeries);
+      setSelected(true);
+    }
+    if (savedCarModelRange) {
+      setSelectedCarModelRange(savedCarModelRange);
+      setRangeCode(savedCarModelRange);
+    }
+    if (savedVehicleType) {
+      setSelectedVehicleType(savedVehicleType);
+    }
+  }, []);
   
     return (
       <Provider theme={lightTheme} colorScheme="light">
@@ -179,7 +221,7 @@ import {
               isRequired
               description="Defines the Series and related Model Range context."
               isDisabled={!selectedCarSeries}
-              selectedKey={selectedCarModelRange}
+              selectedKey={selected && selectedCarModelRange}
             >
               {[...new Set(carModelRange)]?.map((rangeCode) => (
                 <Item  textValue={rangeCode} key={rangeCode}>{rangeCode}</Item>
@@ -195,9 +237,17 @@ import {
               isDisabled={!selectedCarModelRange}
               selectedKey={selectedVehicleType}
             >
-              {[...new Set(vehicleTypeData)]?.map((name) => (
-                <Item key={name} textValue={name}>{name}</Item>
-              ))}
+              {vehicleTypeData && vehicleTypeData.length > 0 ? (
+              [...new Set(vehicleTypeData)].map((item) => (
+                 <Item key={item} textValue={item}>
+                   {item}
+                 </Item>
+               ))
+             ) : (
+               <Item textValue="(NO Value)">
+                 (NO Value Found)
+               </Item>
+             )}
             </Picker>
           </Form>
           <View isHidden={!loading}>
