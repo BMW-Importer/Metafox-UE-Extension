@@ -42,7 +42,7 @@ export default function () {
 
   let [selected, setSelected] = useState(false);
 
-  const[data, setData] =useState(null);
+  const [data, setData] = useState(null);
 
   const onCarSeriesChangeHandler = (value) => {
     setSelectedCarSeries(value);
@@ -77,7 +77,7 @@ export default function () {
   const onCarTransmissionChangeHandler = (value) => {
     setSelectedTransmissionCode(value);
     localStorage.setItem('selectedTransmissionCode', value);
-    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${selectedCarModels}, ${selected}, ${value}`);
+    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${modelCode}, ${selected}, ${value}`);
   };
 
   const URL = 'https://productdata.api.bmw/pdh/technicaldata/v2.0/model/bmw+marketB4R1+bmw_rs+sr_RS/latest';
