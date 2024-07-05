@@ -134,9 +134,9 @@ export default function () {
         try {
           const modelCodes = data?.models?.filter(item => item?.modelRangeCode === selectedCarModelRange);
           const modelCodesDetails = modelCodes.map((item, index) => {
-            const {shortName, seriesCode, shortRangeName, modelCode } = item;
+            const {shortName,  modelCode } = item;
             return {
-              displayString: `${shortName}(${seriesCode}/${shortRangeName}/${modelCode})`,
+              displayString: `${shortName} (${modelCode})`,
               modelCode
             };
           });
