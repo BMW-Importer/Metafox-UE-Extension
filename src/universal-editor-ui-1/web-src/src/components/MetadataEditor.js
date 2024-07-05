@@ -43,8 +43,6 @@ export default function () {
   let [selected, setSelected] = useState(false);
   const [data, setData] = useState();
 
-  const [tenentValue, setTenentValue] = useState();
-
 
   const onCarSeriesChangeHandler = (value) => {
     setSelectedCarSeries(value);
@@ -81,22 +79,6 @@ export default function () {
     localStorage.setItem('selectedTransmissionCode', value);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${selectedCarModels}, ${selected}, ${value}`);
   };
-
-
-  useEffect (()=>{
-    if (window.parent && window.parent !== window) {
-        const parentDocument = window.parent.document;
-        // Fetch metadata by name
-        const metaTenant = parentDocument.querySelector('meta[name="tenant"]').content ? parentDocument.querySelector('meta[name="tenant"]').content : 'no value';
-        setTenentValue(metaTenant);
-        console.log('Description:', metaTenant ? metaTenant.content : 'No description meta tag found.');
-       } else {
-        console.log('Cannot access parent document.');
-      }
-      if(tenentValue) {
-        console.log(tenentValue);
-      }
-    });
 
   const URL = 'https://productdata.api.bmw/pdh/technicaldata/v2.0/model/bmw+marketB4R1+bmw_rs+sr_RS/latest';
 
@@ -174,6 +156,7 @@ export default function () {
         } catch (error) {
         }
       }
+      
     };
   
     handleModelRangeChange();
