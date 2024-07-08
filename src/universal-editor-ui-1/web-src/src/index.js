@@ -27,7 +27,10 @@ try {
 function bootstrapRaw () {
   /* **here you can mock the exc runtime and ims objects** */
   const mockRuntime = { on: () => {} }
-  const mockIms = {}
+  const mockIms = {
+    org : '1',
+    token : '2'
+  }
 
   // render the actual react application and pass along the runtime object to make it available to the App
   ReactDOM.render(
@@ -52,9 +55,9 @@ function bootstrapInExcShell () {
     runtime.done()
     console.log('Ready! received imsProfile:', imsProfile)
     const ims = {
-      profile: imsProfile,
-      org: imsOrg,
-      token: imsToken
+      'profile': imsProfile,
+      "org": imsOrg,
+      "token": imsToken
     }
     // render the actual react application and pass along the runtime and ims objects to make it available to the App
     ReactDOM.render(

@@ -11,7 +11,22 @@ import PreconEditor from "./PreconEditor";
 import TypeRenderer from "./TypeRenderer";
 import ShopByLookEditor from "./ShopByLookEditor";
 
-function App() {
+function App(props) {
+  
+  console.log(props.mockIms);
+  // console.log('runtime objects:',props.runtime);
+  // console.log('ims objects:',props.ims);
+  // console.log('ims objects token:',props.ims.token);
+
+  // //use exc runtime event handlers
+  // // respond to configuration changes
+  // props.runtime.on('configuration',({imsOrg,imsToken,locale})=>
+  //   {console.log('configuration',({imsOrg,imsToken,locale}))})
+  // //reponds to history change events
+  // props.runtime.on('history',({type,path})=>
+  //   {console.log('history',({type,path}));})
+
+
   return (
     <Router>
       <ErrorBoundary onError={onError} FallbackComponent={fallbackComponent}>
@@ -23,7 +38,7 @@ function App() {
           />
           <Route
             exact path="metadata-editor"
-            element={<MetadataEditor />}
+            element={<MetadataEditor ims={props.ims}/>}
           />
           <Route
             exact path="precon-editor"

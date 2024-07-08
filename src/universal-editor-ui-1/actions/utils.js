@@ -190,6 +190,28 @@ function extractNameFromPath(path) {
   }
 }
 
+//----->cors function
+async function allowCORS(token, org) {
+  console.log('allowCORS');
+  const builtHeaders = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`,
+    'x-aem-host': `${location.protocol}//${location.host}`,
+    'x-gw-ims-org-id': org,
+  };
+  const response = await fetch(actions["get-experiment"], {
+    method: 'POST',
+    headers: builtHeaders,
+    body: JSON.stringify({ url: location.pathname })
+  });
+  console.log('response:', response);
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+  const responseData = await response.json();
+  return responseData;
+}
+
 module.exports = {
   errorResponse,
   getBearerToken,
@@ -198,4 +220,5 @@ module.exports = {
   getAemHost,
   getAemHeaders,
   extractNameFromPath,
+  allowCORS
 }

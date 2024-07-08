@@ -17,10 +17,11 @@ import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { extensionId, BASE_URL, MARKET_SEGMENT, LATEST } from "./Constants";
+import { allowCORS } from "../../../actions/utils";
 
 const CAR_MODEL_API_URL = `${BASE_URL}${MARKET_SEGMENT}${LATEST}`;
 
-export default function () {
+export default function (props) {
   const [guestConnection, setGuestConnection] = useState();
   const [loading, setLoading] = useState(true);
   const [carModelRange, setCarModelRange] = useState([]);
@@ -43,6 +44,33 @@ export default function () {
   let [selected, setSelected] = useState(false);
 
   const[data, setData] =useState(null);
+
+  //ims object
+  console.log('ims objects:',props);
+
+  //COR's 
+  const[error, setError] =useState(null);
+  console.log('outside useEffect');
+
+  useEffect(() => {
+    console.log('inside useEffect');
+    const extensionCORS = async () => {
+      console.log('inside async');
+      try {
+        console.log('inside try');
+        const responseData = allowCORS(props.ims.token,props.ims.org);
+        console.log('responseData::', responseData);
+        setData(responseData);
+        const connection = await attach({ id: extensionId });
+        console.log(connection,"connection established");
+        setGuestConnection(connection);
+      } catch (error) {
+        console.error('Fetch error:', error);
+        setError(error);
+      }
+    }
+    extensionCORS();
+  }, []);
 
   const onCarSeriesChangeHandler = (value) => {
     setSelectedCarSeries(value);
