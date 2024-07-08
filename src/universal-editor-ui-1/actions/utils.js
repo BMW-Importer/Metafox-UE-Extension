@@ -189,17 +189,17 @@ function extractNameFromPath(path) {
     path: pathArray.join('/'),
   }
 }
-
+import actions from '../web-src/src/config.json'
 //----->cors function
-async function allowCORS(token, org) {
-  console.log('allowCORS');
+async function allowCORS(params,token, org) {
+  console.log(actions);
   const builtHeaders = {
     "Content-Type": "application/json",
     "Authorization": `Bearer ${token}`,
     'x-aem-host': `${location.protocol}//${location.host}`,
     'x-gw-ims-org-id': org,
   };
-  const response = await fetch(actions["get-experiment"], {
+  const response = await fetch(actions["get-metadata"], {
     method: 'POST',
     headers: builtHeaders,
     body: JSON.stringify({ url: location.pathname })

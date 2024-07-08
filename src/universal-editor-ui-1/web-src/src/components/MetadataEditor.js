@@ -19,6 +19,7 @@ import axios from 'axios';
 import { extensionId, BASE_URL, MARKET_SEGMENT, LATEST } from "./Constants";
 import { allowCORS } from "../../../actions/utils";
 
+
 const CAR_MODEL_API_URL = `${BASE_URL}${MARKET_SEGMENT}${LATEST}`;
 
 export default function (props) {
@@ -50,27 +51,6 @@ export default function (props) {
 
   //COR's 
   const[error, setError] =useState(null);
-  console.log('outside useEffect');
-
-  useEffect(() => {
-    console.log('inside useEffect');
-    const extensionCORS = async () => {
-      console.log('inside async');
-      try {
-        console.log('inside try');
-        const responseData = allowCORS(props.ims.token,props.ims.org);
-        console.log('responseData::', responseData);
-        setData(responseData);
-        const connection = await attach({ id: extensionId });
-        console.log(connection,"connection established");
-        setGuestConnection(connection);
-      } catch (error) {
-        console.error('Fetch error:', error);
-        setError(error);
-      }
-    }
-    extensionCORS();
-  }, []);
 
   const onCarSeriesChangeHandler = (value) => {
     setSelectedCarSeries(value);
@@ -134,6 +114,31 @@ export default function (props) {
 
     fetchData();
   }, []);
+
+
+  //cors
+  useEffect(() => {
+    console.log('inside useEffect');
+    const extensionCORS = async () => {
+      console.log('inside async');
+      try {
+        console.log('inside try');
+        const responseData = allowCORS(props.ims.token,props.ims.org);
+        console.log('responseData::', responseData);
+        setData(responseData.url);
+        const connection = await attach({ id: extensionId });
+        console.log(connection,"connection established");
+        setGuestConnection(connection);
+      } catch (error) {
+        console.error('Fetch error:', error);
+        setError(error);
+      }
+       finally {
+      setLoading(false);
+    }
+    }
+    extensionCORS();
+  },[extensionId]);
 
   useEffect(() => {
     const handleSeriesChange = async () => {
