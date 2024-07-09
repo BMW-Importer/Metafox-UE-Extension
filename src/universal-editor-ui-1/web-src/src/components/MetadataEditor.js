@@ -43,6 +43,7 @@ export default function () {
   let [selected, setSelected] = useState(false);
 
   const [data, setData] = useState(null);
+  
 
   const onCarSeriesChangeHandler = (value) => {
     setSelectedCarSeries(value);
@@ -249,7 +250,7 @@ export default function () {
             placeholder="Select a Series"
             selectedKey={selectedCarSeries}
             isRequired
-             description="Defines the Series and related Model Range context."
+             description="Defines the Series."
           >
             {[...new Set(carSerieses)]?.map((item) => (
               <Item key={item} value={item}>{item}</Item>
@@ -263,7 +264,7 @@ export default function () {
             isRequired
             selectedKey={selectedCarModelRange}
             isDisabled={!selectedCarSeries}
-             description="Defines the Series and related Model Range context."
+             description="Defines the Model Range. "
           >
             {[...new Set(carModelRange)].map((modelrangeCode) => (
               <Item key={modelrangeCode}>
@@ -280,7 +281,7 @@ export default function () {
             isRequired
             selectedKey={selectedCarModels}
             isDisabled={!selectedCarModelRange}
-             description="Defines the Model Code context. The values will be populated by WDH based on the previous selections."
+             description="Defines the Model Code (Type Code)."
           >
             {[...new Set(carModels)]?.map((modelCode) => (
               <Item key={modelCode.displayString} value={modelCode.displayString}>
