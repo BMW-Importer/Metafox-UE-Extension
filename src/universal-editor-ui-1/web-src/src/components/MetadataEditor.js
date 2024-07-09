@@ -69,6 +69,7 @@ export default function () {
       const { displayString, modelCode } = selectedModel;
       setSelectedCarModels(displayString);
       setModelCode(modelCode);
+      setCarModelByTransmission({});
       localStorage.setItem('selectedCarModels', displayString);
       localStorage.setItem('selectedModelCode', modelCode);
       localStorage.removeItem('selectedTransmissionCode');
@@ -129,6 +130,12 @@ export default function () {
   
     handleSeriesChange();
   }, [selectedCarSeries, data]);
+
+  //checkbox
+  const handleCheckboxChange = (isChecked) => {
+    setSelected(isChecked);
+    localStorage.setItem('checkboxSelected', JSON.stringify(isChecked));
+  };
   
   useEffect(() => {
     const handleModelRangeChange = async () => {
@@ -237,6 +244,11 @@ export default function () {
     if (savedModelByTransmission) {
       setSelectedCarModels(savedModelByTransmission);
     }
+
+    const savedCheckboxSelected = localStorage.getItem('checkboxSelected');
+    if (savedCheckboxSelected !== null) {
+      setSelected(JSON.parse(savedCheckboxSelected));
+    }
   }, []);
 
   return (
@@ -289,7 +301,10 @@ export default function () {
             </Item>
             ))}
           </Picker>
-          <Checkbox isSelected={selected} onChange={setSelected}>
+          <Checkbox  isSelected={selected}
+            onChange={handleCheckboxChange}
+            aria-label="Checkbox to filter the meta data"
+            UNSAFE_className="filter-checkbox">
             Enable Technical Data
           </Checkbox>
           <p className="Checkbox-helper">Defines if technical data is enabled.</p>
