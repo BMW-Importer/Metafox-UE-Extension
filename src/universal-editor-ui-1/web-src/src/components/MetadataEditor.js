@@ -242,7 +242,7 @@ export default function () {
           </Picker>
  
           <Picker
-            label="Model Code"
+            label="Model Code (Type Code)"
             necessityIndicator="label"
             onSelectionChange={onCarModelsChangeHandler}
             placeholder="Select a Model Code"
