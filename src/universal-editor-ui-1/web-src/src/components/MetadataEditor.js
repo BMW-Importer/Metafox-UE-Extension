@@ -18,7 +18,7 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { extensionId, BASE_URL, MARKET_SEGMENT, LATEST } from "./Constants";
 import { allowCORS } from "../../../actions/utils";
-
+import actions from '../config.json'
 
 const CAR_MODEL_API_URL = `${BASE_URL}${MARKET_SEGMENT}${LATEST}`;
 
@@ -88,7 +88,7 @@ export default function (props) {
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${selectedCarModels}, ${selected}, ${value}`);
   };
 
-  const URL = 'https://productdata.api.bmw/pdh/technicaldata/v2.0/model/bmw+marketB4R1+bmw_rs+sr_RS/latest';
+  const apiURL = 'https://productdata.api.bmw/pdh/technicaldata/v2.0/model/bmw+marketB4R1+bmw_rs+sr_RS/latest';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -122,13 +122,33 @@ export default function (props) {
     const extensionCORS = async () => {
       console.log('inside async');
       try {
-        console.log('inside try');
-        const responseData = allowCORS(props.ims.token,props.ims.org);
-        console.log('responseData::', responseData);
-        setData(responseData.url);
         const connection = await attach({ id: extensionId });
         console.log(connection,"connection established");
         setGuestConnection(connection);
+        const state = await connection.host.editorState.get();
+        console.log('state:',state);
+            const token = await connection.sharedContext.get('token');
+            const org = await connection.sharedContext.get('orgId');
+            const location = new URL(state.location);
+            
+            //setControlPath(location.pathname.replace('.html', ''));
+            const builtHeaders = {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+                'x-aem-host': location.protocol + '//' + location.host,
+                'x-gw-ims-org-id': org,
+            };
+            const response = await fetch(actions["get-metadata"], {
+              method: 'POST',
+              headers: builtHeaders,
+              body: JSON.stringify({ url: location.pathname })
+            });
+            console.log('response:', response);
+        console.log('inside try');
+        //const responseData = allowCORS(props.ims.token,props.ims.org);
+        //console.log('responseData::', responseData);
+        setData(response.url);
+       
       } catch (error) {
         console.error('Fetch error:', error);
         setError(error);
@@ -199,7 +219,7 @@ export default function (props) {
     const fetchVehiclesData = async () => {
       if (!modelCode) return;
       try {
-        const modelDetailUrl = `${URL}/${modelCode}`;
+        const modelDetailUrl = `${apiURL}/${modelCode}`;
         const modelDetailResponse = await axios.get(modelDetailUrl);
         const modelDetail = modelDetailResponse?.data;
         setVehicleData(modelDetail?.vehicles);

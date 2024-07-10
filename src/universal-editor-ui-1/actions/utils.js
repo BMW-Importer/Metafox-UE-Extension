@@ -191,7 +191,7 @@ function extractNameFromPath(path) {
 }
 import actions from '../web-src/src/config.json'
 //----->cors function
-async function allowCORS(params,token, org) {
+async function allowCORS(token, org) {
   console.log(actions);
   const builtHeaders = {
     "Content-Type": "application/json",

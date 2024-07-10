@@ -18,10 +18,10 @@ const metadataProps = ['carModel', 'carSeries', 'jcr:title', 'jcr:description', 
 
 async function getMetadataFromAEM(url, aemHost, headers) {
     const properties = await getProperties(url, aemHost, headers, 1);
-    const content = properties['jcr:content'];
+    const content = properties;
     const metadata = Object.fromEntries(metadataProps.map((prop) => [prop, content[prop] || '']));
 
-    return metadata; 
+    return properties; 
 } 
 
 // main function that will be executed by Adobe I/O Runtime
