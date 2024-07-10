@@ -14,7 +14,7 @@
  * @returns {string}
  *
  */
-function stringParameters (params) {
+function stringParameters(params) {
   // hide authorization token without overriding params
   let headers = params.__ow_headers || {}
   if (headers.authorization) {
@@ -36,7 +36,7 @@ function stringParameters (params) {
  * @returns {array}
  * @private
  */
-function getMissingKeys (obj, required) {
+function getMissingKeys(obj, required) {
   return required.filter(r => {
     const splits = r.split('.')
     const last = splits[splits.length - 1]
@@ -59,7 +59,7 @@ function getMissingKeys (obj, required) {
  * @returns {string} if the return value is not null, then it holds an error message describing the missing inputs.
  *
  */
-function checkMissingRequestInputs (params, requiredParams = [], requiredHeaders = []) {
+function checkMissingRequestInputs(params, requiredParams = [], requiredHeaders = []) {
   let errorMessage = null
 
   // input headers are always lowercase
@@ -93,10 +93,10 @@ function checkMissingRequestInputs (params, requiredParams = [], requiredHeaders
  * @returns {string|undefined} the token string or undefined if not set in request headers.
  *
  */
-function getBearerToken (params) {
+function getBearerToken(params) {
   if (params.__ow_headers &&
-      params.__ow_headers.authorization &&
-      params.__ow_headers.authorization.startsWith('Bearer ')) {
+    params.__ow_headers.authorization &&
+    params.__ow_headers.authorization.startsWith('Bearer ')) {
     return params.__ow_headers.authorization.substring('Bearer '.length)
   }
   return undefined
@@ -115,7 +115,7 @@ function getBearerToken (params) {
  * @returns {object} the error object, ready to be returned from the action main's function.
  *
  */
-function errorResponse (statusCode, message, logger) {
+function errorResponse(statusCode, message, logger) {
   if (logger && typeof logger.info === 'function') {
     logger.info(`${statusCode}: ${message}`)
   }
@@ -129,9 +129,73 @@ function errorResponse (statusCode, message, logger) {
   }
 }
 
+/**
+ *
+ * Extracts the aemHost string from the aemHost header in the request parameters.
+ *
+ * @param {object} params action input parameters.
+ *
+ * @returns {string|undefined} the aemHost string or undefined if not set in request headers.
+ *
+ */
+function getAemHost(params) {
+  return params.__ow_headers['x-aem-host'] || undefined;
+}
+
+/*
+ * Extracts the AEM headers required for AEM API call.
+ *
+ * @param {object} params action input parameters.
+ *
+ * @returns {string|undefined} the headers required for fetch call.
+ *
+ */
+async function getAemHeaders(params) {
+  const aemHost = params.__ow_headers['x-aem-host'];
+  const imsOrg = params.__ow_headers['x-gw-ims-org-id'];
+  const headers = new Headers();
+  const imsToken = getBearerToken(params);
+
+  const csrfResponse = await fetch(`${aemHost}/libs/granite/csrf/token.json`, {
+    'method': 'GET',
+    'headers': {
+      'Accept': '*/*',
+      'Authorization': `Bearer ${imsToken}`,
+      'X-Api-Key': 'exc_app',
+      'X-Gw-Ims-Org-Id': imsOrg,
+    },
+  });
+  const csrf = await csrfResponse.json();
+
+  headers.set('X-Api-Key', 'aem-headless-cf-admin');
+  headers.set('X-Gw-Ims-Org-Id', imsOrg);
+  headers.set('CSRF-Token', csrf.token);
+  headers.set('X-Aem-Affinity-Type', 'api');
+  headers.set('Authorization', `Bearer ${imsToken}`);
+
+  return headers;
+}
+
+function extractNameFromPath(path) {
+  const pathArray = path.split('/');
+
+  let name = "/";
+  while (name === "/" || name === "") {
+    name = pathArray.pop();
+  }
+
+  return {
+    name: name,
+    path: pathArray.join('/'),
+  }
+}
+
 module.exports = {
   errorResponse,
   getBearerToken,
   stringParameters,
-  checkMissingRequestInputs
+  checkMissingRequestInputs,
+  getAemHost,
+  getAemHeaders,
+  extractNameFromPath,
 }

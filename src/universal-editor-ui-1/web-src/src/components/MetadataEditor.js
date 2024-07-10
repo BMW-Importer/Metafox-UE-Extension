@@ -138,16 +138,16 @@ export default function (props) {
                 'x-aem-host': location.protocol + '//' + location.host,
                 'x-gw-ims-org-id': org,
             };
-            const response = await fetch(actions["metadata-fetch"], {
+            const response = await fetch(actions["get-metadata"], {
               method: 'POST',
               headers: builtHeaders,
               body: JSON.stringify({ url: location.pathname })
             });
-            console.log('response:', response);
-        console.log('inside try');
-        //const responseData = allowCORS(props.ims.token,props.ims.org);
-        //console.log('responseData::', responseData);
-        setData(response.url);
+        console.log('response:', response);
+        const responseData = await response.json(); 
+        console.log('responseData:', responseData.tenant);
+        setData(responseData.tenant);
+        //setTenenant(responseData.tenant)
        
       } catch (error) {
         console.error('Fetch error:', error);
