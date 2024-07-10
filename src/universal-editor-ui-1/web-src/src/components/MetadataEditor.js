@@ -56,7 +56,7 @@ export default function () {
   const onCarModelRangeChangeHandler = (value) => {
     setSelectedCarModelRange(value);
     setSeriesCode(value);
-     setCarModels([]);
+    // setCarModels([]);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
  
   };
@@ -67,7 +67,7 @@ export default function () {
       const { displayString, modelCode } = selectedModel;
       setSelectedCarModels(displayString);
       setModelCode(modelCode);
-      guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${modelCode}, ${displayString} ${selected},`);
+      guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${modelCode}, ${displayString}, ${selected},`);
     }
   };
   const onCarTransmissionChangeHandler = (value) => {
@@ -94,7 +94,7 @@ export default function () {
         setSelectedCarModelRange(modelRange);
         setSelectedCarModels(selectedCarModel);
         setModelCode(modelCode);
-        setSelected(isSelected);
+        setSelected(isSelected === 'true');
         setSelectedTransmissionCode(transmissionCode);
       }
     }
@@ -218,7 +218,7 @@ export default function () {
             placeholder="Select a Series"
             selectedKey={selectedCarSeries}
             isRequired
-             description="Defines the Series and related Model Range context."
+             description="Defines the Series."
           >
             {[...new Set(carSerieses)]?.map((item) => (
               <Item key={item} value={item}>{item}</Item>
@@ -232,7 +232,7 @@ export default function () {
             isRequired
             selectedKey={selectedCarModelRange}
             isDisabled={!selectedCarSeries}
-             description="Defines the Series and related Model Range context."
+             description="Defines the Model Range. "
           >
             {[...new Set(carModelRange)].map((modelrangeCode) => (
               <Item key={modelrangeCode}>
@@ -249,7 +249,7 @@ export default function () {
             isRequired
             selectedKey={selectedCarModels}
             isDisabled={!selectedCarModelRange}
-             description="Defines the Model Code context. The values will be populated by WDH based on the previous selections."
+             description="Defines the Model Code (Type Code)."
           >
             {[...new Set(carModels)]?.map((modelCode) => (
               <Item key={modelCode.displayString} value={modelCode.displayString}>
