@@ -1,7 +1,7 @@
 /*
  * <license header>
  */
-
+ 
 import {
   Flex,
   Form,
@@ -17,73 +17,90 @@ import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { extensionId, BASE_URL, MARKET_SEGMENT, LATEST } from "./Constants";
-
+ 
 const CAR_MODEL_API_URL = `${BASE_URL}${MARKET_SEGMENT}${LATEST}`;
-
+ 
 export default function () {
   const [guestConnection, setGuestConnection] = useState();
   const [loading, setLoading] = useState(true);
   const [carModelRange, setCarModelRange] = useState([]);
   const [selectedCarModelRange, setSelectedCarModelRange] = useState();
   const [seriesCode,setSeriesCode]= useState('');
-
+ 
   const [carSerieses, setCarSerieses] = useState([]);
   const [selectedCarSeries, setSelectedCarSeries] = useState();
-
-
+ 
+ 
   const [carModels, setCarModels] = useState([]);
   const [modelCode, setModelCode] = useState();
   const [selectedCarModels, setSelectedCarModels] = useState();
-
-  
+ 
+ 
   const [vehicleData, setVehicleData] = useState([]);
   const [selectedTransmissionCode, setSelectedTransmissionCode] = useState();
   const [carModelByTransmission, setCarModelByTransmission] = useState({});
-
+ 
   let [selected, setSelected] = useState(false);
-
+ 
   const [data, setData] = useState(null);
-  
-
+ 
+  const [model, setModel] = useState([]);
+ 
+ 
   const onCarSeriesChangeHandler = (value) => {
     setSelectedCarSeries(value);
-    setCarModelRange([]);
-    localStorage.setItem('selectedCarSeries', value);
-    localStorage.removeItem('selectedCarModelRange');
+     setCarModelRange([]);
     guestConnection?.host?.field.onChange(value);
   };
-
+ 
   const onCarModelRangeChangeHandler = (value) => {
     setSelectedCarModelRange(value);
     setSeriesCode(value);
-    setCarModels([]);
-    localStorage.setItem('selectedCarModelRange', value);
-    localStorage.removeItem('selectedCarModels');
+     setCarModels([]);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
-
+ 
   };
-
+ 
   const onCarModelsChangeHandler = (value) => {
     const selectedModel = carModels.find(model => model.displayString === value);
     if (selectedModel) {
       const { displayString, modelCode } = selectedModel;
       setSelectedCarModels(displayString);
       setModelCode(modelCode);
-      setCarModelByTransmission({});
-      localStorage.setItem('selectedCarModels', displayString);
-      localStorage.setItem('selectedModelCode', modelCode);
-      localStorage.removeItem('selectedTransmissionCode');
-      guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${modelCode}, ${selected},`);
+      guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${modelCode}, ${displayString} ${selected},`);
     }
   };
   const onCarTransmissionChangeHandler = (value) => {
     setSelectedTransmissionCode(value);
-    localStorage.setItem('selectedTransmissionCode', value);
-    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${modelCode}, ${selected}, ${value}`);
+    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${modelCode}, ${selectedCarModels}, ${selected}, ${value}`);
   };
-
+ 
   const URL = 'https://productdata.api.bmw/pdh/technicaldata/v2.0/model/bmw+marketB4R1+bmw_rs+sr_RS/latest';
-
+ 
+ 
+  useEffect(() => {
+    const getDataValue = async () => {
+      const connection = await attach({ id: extensionId });
+      setGuestConnection(connection);
+ 
+      const modelData = await connection.host.field.getValue();
+      setModel([modelData]);
+ 
+ 
+      if (modelData) {
+        const [series, modelRange, modelCode, selectedCarModel, isSelected, transmissionCode] = modelData.split(', ');
+ 
+        setSelectedCarSeries(series);
+        setSelectedCarModelRange(modelRange);
+        setSelectedCarModels(selectedCarModel);
+        setModelCode(modelCode);
+        setSelected(isSelected);
+        setSelectedTransmissionCode(transmissionCode);
+      }
+    }
+    getDataValue();
+  }, []);
+ 
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -92,51 +109,35 @@ export default function () {
         setData(data);
         const seriesCodes = data?.models?.map((item) => item?.seriesCode);
         setCarSerieses(seriesCodes);
-        const savedCarSeries = localStorage.getItem('selectedCarSeries');
-        if (savedCarSeries) {
-          setSelectedCarSeries(savedCarSeries);
-        }
-
         const connection = await attach({ id: extensionId });
         setGuestConnection(connection);
-
       } catch (error) {
       } finally {
         setLoading(false);
       }
     };
-
+ 
     fetchData();
   }, []);
-
+ 
   useEffect(() => {
     const handleSeriesChange = async () => {
       if (selectedCarSeries) {
         try {
           const modelRange = data?.models?.filter(item => item?.seriesCode === selectedCarSeries).map(item => item?.modelRangeCode);
           setCarModelRange(modelRange);
-  
-          const savedModelRange = localStorage.getItem('selectedCarModelRange');
-          if (savedModelRange) {
-            setSelectedCarModelRange(savedModelRange);
-          }
-  
           const connection = await attach({ id: extensionId });
           setGuestConnection(connection);
+          const currrentCarModel = await connection.host.field.getValue();
+          console.log(">> currrentCarModel", currrentCarModel);
         } catch (error) {
         }
       }
     };
-  
+ 
     handleSeriesChange();
   }, [selectedCarSeries, data]);
-
-  //checkbox
-  const handleCheckboxChange = (isChecked) => {
-    setSelected(isChecked);
-    localStorage.setItem('checkboxSelected', JSON.stringify(isChecked));
-  };
-  
+ 
   useEffect(() => {
     const handleModelRangeChange = async () => {
       if (selectedCarModelRange) {
@@ -150,26 +151,18 @@ export default function () {
             };
           });
           setCarModels(modelCodesDetails);
-
-          const savedCarModels = localStorage.getItem('selectedCarModels');
-          const savedModelCode = localStorage.getItem('selectedModelCode');
-
-          if (savedCarModels && savedModelCode) {
-            setSelectedCarModels(savedCarModels);
-            setModelCode(savedModelCode);
-          }
-  
+          console.log(model);
           const connection = await attach({ id: extensionId });
           setGuestConnection(connection);
         } catch (error) {
         }
       }
-      
+     
     };
-  
+ 
     handleModelRangeChange();
   }, [selectedCarModelRange, data, extensionId]);
-
+ 
   useEffect(() => {
     const fetchVehiclesData = async () => {
       if (!modelCode) return;
@@ -183,11 +176,11 @@ export default function () {
         setLoading(false);
       }
     };
-
+ 
     fetchVehiclesData();
   }, [modelCode]);
-
-
+ 
+ 
   useEffect(() => {
     const groupByTransmission = async () => {
       if (vehicleData.length > 0) {
@@ -203,53 +196,16 @@ export default function () {
             return result;
           }, {});
           setCarModelByTransmission(groupedByTransmission);
-  
-          const savedModelByTransmission = localStorage.getItem('selectedTransmissionCode');
-          if (savedModelByTransmission) {
-            setSelectedTransmissionCode(savedModelByTransmission);
-          }
-  
           const connection = await attach({ id: extensionId });
           setGuestConnection(connection);
         } catch (error) {
         }
       }
     };
-  
+ 
     groupByTransmission();
   }, [vehicleData, modelCode, extensionId]);
-  
-
-  useEffect(() => {
-    // Enable dropdowns if values are stored in localStorage
-    const savedCarSeries = localStorage.getItem('selectedCarSeries');
-    const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
-    const savedCarModel = localStorage.getItem('selectedCarModels');
-    const savedModelByTransmission = localStorage.getItem('selectedTransmissionCode');
-    const savedModelCode = localStorage.getItem('selectedModelCode');
-
-    
-    if (savedCarSeries) {
-      setSelectedCarSeries(savedCarSeries);
-      setSeriesCode(savedCarSeries);
-    }
-    if (savedCarModelRange) {
-      setSelectedCarModelRange(savedCarModelRange);
-    }
-    if (savedCarModel && savedModelCode) {
-      setSelectedCarModels(savedCarModel);
-      setModelCode(savedModelCode);
-    }
-
-    if (savedModelByTransmission) {
-      setSelectedCarModels(savedModelByTransmission);
-    }
-
-    const savedCheckboxSelected = localStorage.getItem('checkboxSelected');
-    if (savedCheckboxSelected !== null) {
-      setSelected(JSON.parse(savedCheckboxSelected));
-    }
-  }, []);
+ 
 
   return (
     <Provider theme={lightTheme} colorScheme="light">
@@ -262,7 +218,7 @@ export default function () {
             placeholder="Select a Series"
             selectedKey={selectedCarSeries}
             isRequired
-             description="Defines the Series."
+             description="Defines the Series and related Model Range context."
           >
             {[...new Set(carSerieses)]?.map((item) => (
               <Item key={item} value={item}>{item}</Item>
@@ -276,7 +232,7 @@ export default function () {
             isRequired
             selectedKey={selectedCarModelRange}
             isDisabled={!selectedCarSeries}
-             description="Defines the Model Range. "
+             description="Defines the Series and related Model Range context."
           >
             {[...new Set(carModelRange)].map((modelrangeCode) => (
               <Item key={modelrangeCode}>
@@ -284,7 +240,7 @@ export default function () {
               </Item>
             ))}
           </Picker>
-
+ 
           <Picker
             label="Model Code"
             necessityIndicator="label"
@@ -293,7 +249,7 @@ export default function () {
             isRequired
             selectedKey={selectedCarModels}
             isDisabled={!selectedCarModelRange}
-             description="Defines the Model Code (Type Code)."
+             description="Defines the Model Code context. The values will be populated by WDH based on the previous selections."
           >
             {[...new Set(carModels)]?.map((modelCode) => (
               <Item key={modelCode.displayString} value={modelCode.displayString}>
@@ -301,10 +257,7 @@ export default function () {
             </Item>
             ))}
           </Picker>
-          <Checkbox  isSelected={selected}
-            onChange={handleCheckboxChange}
-            aria-label="Checkbox to filter the meta data"
-            UNSAFE_className="filter-checkbox">
+          <Checkbox isSelected={selected} onChange={setSelected}>
             Enable Technical Data
           </Checkbox>
           <p className="Checkbox-helper">Defines if technical data is enabled.</p>
@@ -325,9 +278,9 @@ export default function () {
             ) : (
               <Item value="No transmission code">No transmission code</Item>
             )}
-
+ 
           </Picker>}
-
+ 
         </Form>
         <View isHidden={!loading}>
           <Flex
@@ -345,3 +298,4 @@ export default function () {
     </Provider>
   );
 }
+ 
