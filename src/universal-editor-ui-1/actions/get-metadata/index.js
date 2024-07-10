@@ -18,10 +18,10 @@ const metadataProps = ['carModel', 'carSeries', 'jcr:title', 'jcr:description', 
 
 async function getMetadataFromAEM(url, aemHost, headers) {
     const properties = await getProperties(url, aemHost, headers, 1);
-    const content = properties;
+    const content = properties["jcr:content"];
     const metadata = Object.fromEntries(metadataProps.map((prop) => [prop, content[prop] || '']));
 
-    return properties; 
+    return metadata; 
 } 
 
 // main function that will be executed by Adobe I/O Runtime
@@ -43,8 +43,8 @@ async function main(params) {
     const url = params.url;
 
     logger.info('Getting experiment data from AEM', url)
-    const metadata = await getMetadataFromAEM(url, aemHost, headers);
-    logger.info('Retrieved experiment data', metadata);
+    // const metadata = await getMetadataFromAEM(url, aemHost, headers);
+    // logger.info('Retrieved experiment data', metadata);
     // const experiment = formatExperiment(metadata);
 
     // if (!metadata.id) {
@@ -55,7 +55,10 @@ async function main(params) {
     //     return { statusCode: 200, body: noExperiment};
     // }
 
-    return { statusCode: 200, body: metadata};
+    return {
+      statusCode: 200,
+      body: '{}'
+    }
 }
 
 exports.main = main;
