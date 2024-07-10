@@ -241,7 +241,7 @@ export default function () {
   return (
     <Provider theme={lightTheme} colorScheme="light">
       <Flex direction="column">
-        <Form isHidden={loading}  UNSAFE_className="meta-data-form">
+        <Form isHidden={loading} UNSAFE_style={{backgroundColor:'#fdfdfd'}} UNSAFE_className="meta-data-form">
           <Picker
             label="Series"
             necessityIndicator="label"
