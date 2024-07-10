@@ -138,7 +138,7 @@ export default function (props) {
                 'x-aem-host': location.protocol + '//' + location.host,
                 'x-gw-ims-org-id': org,
             };
-            const response = await fetch(actions["metadata-fetch"], {
+            const response = await fetch(actions["get-metadata"], {
               method: 'POST',
               headers: builtHeaders,
               body: JSON.stringify({ url: location.pathname })
