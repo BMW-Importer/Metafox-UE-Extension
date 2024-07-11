@@ -36,6 +36,7 @@ export default function () {
 
   const [vehicleTypeData, setVehicleTypeData] = useState([]);
   const [selectedVehicleType, setSelectedVehicleType] = useState('');
+  const [model, setModel] = useState([]);
 
   const [selected, setSelected] = useState(false);
 
@@ -46,11 +47,11 @@ export default function () {
       setSelectedCarSeries(description);
       setSeriesCode(seriesCode);
       setSelected(true);
-      setCarModelRange([]); // Clear car model range options
-      setSelectedCarModelRange(''); // Clear selected car model range
-      localStorage.setItem('selectedCarSeries', description);
-      localStorage.setItem('selectedCode', seriesCode);
-      localStorage.removeItem('selectedCarModelRange');
+      // setCarModelRange([]); // Clear car model range options
+      // setSelectedCarModelRange(''); // Clear selected car model range
+      // localStorage.setItem('selectedCarSeries', description);
+      // localStorage.setItem('selectedCode', seriesCode);
+      // localStorage.removeItem('selectedCarModelRange');
       guestConnection?.host?.field.onChange(seriesCode);
   }
   };
@@ -58,18 +59,40 @@ export default function () {
   const onCarModelRangeChangeHandler = (value) => {
     setSelectedCarModelRange(value);
     setRangeCode(value);
-    setVehicleTypeData([]); // Clear vehicle type data
-    setSelectedVehicleType(''); 
-    localStorage.setItem('selectedCarModelRange', value);
-    localStorage.removeItem('selectedVehicleType');
+    // setVehicleTypeData([]); // Clear vehicle type data
+    // setSelectedVehicleType(''); 
+    // localStorage.setItem('selectedCarModelRange', value);
+    // localStorage.removeItem('selectedVehicleType');
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
   };
 
   const onVehicleChangeHandler = (value) => {
     setSelectedVehicleType(value);
-    localStorage.setItem('selectedVehicleType', value);
+    // localStorage.setItem('selectedVehicleType', value);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
   };
+
+  //get the values from guestconne
+  
+  useEffect(() => {
+    const getDataValue = async () => {
+      const connection = await attach({ id: priConExtensionId });
+      setGuestConnection(connection);
+ 
+      if(guestConnection){
+        const modelData = await guestConnection.host.field.getValue();
+        setModel([modelData]);
+        console.log(modelData);
+        if (modelData) {
+          const [description, modelRange,selectedVehicleType ] = modelData.split(', ');
+          setSelectedCarSeries(description);
+          setSelectedCarModelRange(modelRange);
+          setVehicleTypeData(selectedVehicleType);
+        }
+      }
+    }
+    getDataValue();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,12 +101,12 @@ export default function () {
         const data = await response.json();
         const seriesCodes = Object.values(data).map(item => ({seriesCode:item.seriesCode, description:item.description}));
         setCarSerieses(Object.values(seriesCodes));
-        const savedCarSeries = localStorage.getItem('selectedCarSeries');
-        const savedSeries = localStorage.getItem('selectedCode');
-        if (savedCarSeries && savedSeries) {
-          setSelectedCarSeries(savedCarSeries);
-          setSeriesCode(savedSeries);
-        }
+        // const savedCarSeries = localStorage.getItem('selectedCarSeries');
+        // const savedSeries = localStorage.getItem('selectedCode');
+        // if (savedCarSeries && savedSeries) {
+        //   setSelectedCarSeries(savedCarSeries);
+        //   setSeriesCode(savedSeries);
+        // }
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
       } catch (error) {
@@ -106,10 +129,10 @@ export default function () {
         const modelDetail = modelDetailResponse?.data;
         const rangeCode = Object.values(modelDetail).map(item => item.modelRangeCode);
         setCarModelRange(Object.values(rangeCode));
-        const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
-        if (savedCarModelRange) {
-          setSelectedCarModelRange(savedCarModelRange);
-        }
+        // const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
+        // if (savedCarModelRange) {
+        //   setSelectedCarModelRange(savedCarModelRange);
+        // }
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
       } catch (error) {
@@ -164,8 +187,8 @@ useEffect(() => {
         return parts.join(', ');
     });
       setVehicleTypeData(vehicles);
-      const savedVehicleTypeData = localStorage.getItem('selectedVehicleType');
-      if (savedVehicleTypeData) setSelectedVehicleType(savedVehicleTypeData);
+      // const savedVehicleTypeData = localStorage.getItem('selectedVehicleType');
+      // if (savedVehicleTypeData) setSelectedVehicleType(savedVehicleTypeData);
 
       const connection = await attach({ id: priConExtensionId });
       setGuestConnection(connection);
@@ -179,27 +202,27 @@ useEffect(() => {
   fetchVehicleByPreConId();
 }, [preconId]);
 
-useEffect(() => {
-  // Enable dropdowns if values are stored in localStorage
-  const savedCarSeries = localStorage.getItem('selectedCarSeries');
-  const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
-  const savedVehicleType = localStorage.getItem('selectedVehicleType');
-  const savedSeries = localStorage.getItem('selectedCode');
+// useEffect(() => {
+//   // Enable dropdowns if values are stored in localStorage
+//   const savedCarSeries = localStorage.getItem('selectedCarSeries');
+//   const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
+//   const savedVehicleType = localStorage.getItem('selectedVehicleType');
+//   const savedSeries = localStorage.getItem('selectedCode');
 
 
-  if (savedCarSeries && savedSeries) {
-    setSelectedCarSeries(savedCarSeries);
-    setSeriesCode(savedSeries);
-    setSelected(true);
-  }
-  if (savedCarModelRange) {
-    setSelectedCarModelRange(savedCarModelRange);
-    setRangeCode(savedCarModelRange);
-  }
-  if (savedVehicleType) {
-    setSelectedVehicleType(savedVehicleType);
-  }
-}, []);
+//   if (savedCarSeries && savedSeries) {
+//     setSelectedCarSeries(savedCarSeries);
+//     setSeriesCode(savedSeries);
+//     setSelected(true);
+//   }
+//   if (savedCarModelRange) {
+//     setSelectedCarModelRange(savedCarModelRange);
+//     setRangeCode(savedCarModelRange);
+//   }
+//   if (savedVehicleType) {
+//     setSelectedVehicleType(savedVehicleType);
+//   }
+// }, []);
 
 
   return (
