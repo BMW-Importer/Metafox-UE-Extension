@@ -18,6 +18,7 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { extensionId, BASE_URL, MARKET_SEGMENT, LATEST } from "./Constants";
 import actions from '../config.json'
+import {getResponse} from '../../../actions/utils.js'
 
 
 
@@ -96,20 +97,8 @@ export default function (props) {
         const token = await connection.sharedContext.get('token');
         const org = await connection.sharedContext.get('orgId');
         const location = new URL(state.location);
-        const builtHeaders = {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-            'x-aem-host': location.protocol + '//' + location.host,
-            'x-gw-ims-org-id': org,
-        };
-        const response = await fetch(actions["get-metadata"], {
-          method: 'POST',
-          headers: builtHeaders,
-          body: JSON.stringify({ url: location.pathname })
-        });
-        const responseData = await response.json(); 
-        console.log('responseData:', responseData.tenant);
-        setTenant(responseData.tenant)
+        const responseData = await getResponse(location,token,org);
+        setTenant(responseData.tenant);
       } catch (error) {
         setError(error);
       }
@@ -121,7 +110,6 @@ export default function (props) {
   },[extensionId]);
   const CAR_MODEL_API_URL = `${BASE_URL}${tenant}${LATEST}`;
   useEffect(() => {
-    console.log('inside fetch data ');
     const fetchData = async () => {
       try {
         if(tenant){

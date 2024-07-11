@@ -189,6 +189,23 @@ function extractNameFromPath(path) {
     path: pathArray.join('/'),
   }
 }
+import actions from '../web-src/src/config.json';
+async function getResponse(location,token,org) {
+  const builtHeaders = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`,
+    'x-aem-host': location.protocol + '//' + location.host,
+    'x-gw-ims-org-id': org,
+  };
+  const response = await fetch(actions["get-metadata"], {
+    method: 'POST',
+    headers: builtHeaders,
+    body: JSON.stringify({ url: location.pathname })
+  });
+  const responseData = await response.json(); 
+  console.log('responseData:', responseData.tenant);
+  return responseData;
+}
 
 module.exports = {
   errorResponse,
@@ -198,4 +215,5 @@ module.exports = {
   getAemHost,
   getAemHeaders,
   extractNameFromPath,
+  getResponse,
 }
