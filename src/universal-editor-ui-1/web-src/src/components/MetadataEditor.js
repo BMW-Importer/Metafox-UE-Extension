@@ -17,10 +17,9 @@ import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { extensionId, BASE_URL, MARKET_SEGMENT, LATEST } from "./Constants";
-import { allowCORS } from "../../../actions/utils";
 import actions from '../config.json'
 
-const CAR_MODEL_API_URL = `${BASE_URL}${MARKET_SEGMENT}${LATEST}`;
+
 
 export default function (props) {
   const [guestConnection, setGuestConnection] = useState();
@@ -45,10 +44,7 @@ export default function (props) {
   let [selected, setSelected] = useState(false);
 
   const[data, setData] =useState(null);
-
-  //ims object
-  console.log('ims objects:',props);
-
+  const[tenant, setTenant] =useState('');
   //COR's 
   const[error, setError] =useState(null);
 
@@ -88,11 +84,47 @@ export default function (props) {
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${selectedCarModels}, ${selected}, ${value}`);
   };
 
-  const apiURL = 'https://productdata.api.bmw/pdh/technicaldata/v2.0/model/bmw+marketB4R1+bmw_rs+sr_RS/latest';
-
+  const apiURL = 'https://productdata.api.bmw/pdh/technicaldata/v2.0/model/'+tenant+'/latest';
+//cors
   useEffect(() => {
+    const extensionCORS = async () => {
+      try {
+        const connection = await attach({ id: extensionId });
+        console.log(connection,"connection established");
+        setGuestConnection(connection);
+        const state = await connection.host.editorState.get();
+        const token = await connection.sharedContext.get('token');
+        const org = await connection.sharedContext.get('orgId');
+        const location = new URL(state.location);
+        const builtHeaders = {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            'x-aem-host': location.protocol + '//' + location.host,
+            'x-gw-ims-org-id': org,
+        };
+        const response = await fetch(actions["get-metadata"], {
+          method: 'POST',
+          headers: builtHeaders,
+          body: JSON.stringify({ url: location.pathname })
+        });
+        const responseData = await response.json(); 
+        console.log('responseData:', responseData.tenant);
+        setTenant(responseData.tenant)
+      } catch (error) {
+        setError(error);
+      }
+       finally {
+        setLoading(false);
+      }
+    }
+    extensionCORS();
+  },[extensionId]);
+  const CAR_MODEL_API_URL = `${BASE_URL}${tenant}${LATEST}`;
+  useEffect(() => {
+    console.log('inside fetch data ');
     const fetchData = async () => {
       try {
+        if(tenant){
         const response = await fetch(CAR_MODEL_API_URL);
         const data = await response.json();
         setData(data);
@@ -102,7 +134,7 @@ export default function (props) {
         if (savedCarSeries) {
           setSelectedCarSeries(savedCarSeries);
         }
-
+}
         const connection = await attach({ id: extensionId });
         setGuestConnection(connection);
 
@@ -113,52 +145,10 @@ export default function (props) {
     };
 
     fetchData();
-  }, []);
+  }, [tenant]);
 
 
-  //cors
-  useEffect(() => {
-    console.log('inside useEffect');
-    const extensionCORS = async () => {
-      console.log('inside async');
-      try {
-        const connection = await attach({ id: extensionId });
-        console.log(connection,"connection established");
-        setGuestConnection(connection);
-        const state = await connection.host.editorState.get();
-        console.log('state:',state);
-            const token = await connection.sharedContext.get('token');
-            const org = await connection.sharedContext.get('orgId');
-            const location = new URL(state.location);
-            
-            //setControlPath(location.pathname.replace('.html', ''));
-            const builtHeaders = {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-                'x-aem-host': location.protocol + '//' + location.host,
-                'x-gw-ims-org-id': org,
-            };
-            const response = await fetch(actions["get-metadata"], {
-              method: 'POST',
-              headers: builtHeaders,
-              body: JSON.stringify({ url: location.pathname })
-            });
-        console.log('response:', response);
-        const responseData = await response.json(); 
-        console.log('responseData:', responseData.tenant);
-        setData(responseData.tenant);
-        //setTenenant(responseData.tenant)
-       
-      } catch (error) {
-        console.error('Fetch error:', error);
-        setError(error);
-      }
-       finally {
-      setLoading(false);
-    }
-    }
-    extensionCORS();
-  },[extensionId]);
+  
 
   useEffect(() => {
     const handleSeriesChange = async () => {
@@ -219,10 +209,11 @@ export default function (props) {
     const fetchVehiclesData = async () => {
       if (!modelCode) return;
       try {
+        if(tenant){
         const modelDetailUrl = `${apiURL}/${modelCode}`;
         const modelDetailResponse = await axios.get(modelDetailUrl);
         const modelDetail = modelDetailResponse?.data;
-        setVehicleData(modelDetail?.vehicles);
+        setVehicleData(modelDetail?.vehicles);}
       } catch (error) {
       } finally {
         setLoading(false);
@@ -230,7 +221,7 @@ export default function (props) {
     };
 
     fetchVehiclesData();
-  }, [modelCode]);
+  }, [tenant,modelCode]);
 
 
   useEffect(() => {
