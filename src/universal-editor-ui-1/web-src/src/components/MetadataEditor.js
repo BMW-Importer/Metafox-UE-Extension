@@ -16,10 +16,9 @@ import {
 import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { extensionId, BASE_URL, MARKET_SEGMENT, LATEST } from "./Constants";
- 
-const CAR_MODEL_API_URL = `${BASE_URL}${MARKET_SEGMENT}${LATEST}`;
- 
+import { extensionId, BASE_URL, LATEST, MODEL_BASE_URL } from "./Constants";
+import actions from '../config.json';
+
 export default function () {
   const [guestConnection, setGuestConnection] = useState();
   const [loading, setLoading] = useState(true);
@@ -43,20 +42,64 @@ export default function () {
   let [selected, setSelected] = useState(false);
  
   const [data, setData] = useState(null);
- 
+  const[tenant, setTenant] =useState('');
   const [model, setModel] = useState([]);
+  const[error, setError] =useState(null);
+
+  const CAR_MODEL_API_URL = `${BASE_URL}${tenant}${LATEST}`;
+
+  const apiURL = `${MODEL_BASE_URL}${tenant}${LATEST}`;
+
+  useEffect(() => {
+    (async () => {
+      const connection = await attach({ id: extensionId })
+      setGuestConnection(connection);
+    })()
+  }, [])
+  
+    useEffect(() => {
+      const extensionCORS = async () => {
+        try {
+          if(guestConnection){
+            const state = await guestConnection.host.editorState.get();
+            const token = await guestConnection.sharedContext.get('token');
+            const org = await guestConnection.sharedContext.get('orgId');
+            const location = new URL(state.location);
+            const builtHeaders = {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+                'x-aem-host': location.protocol + '//' + location.host,
+                'x-gw-ims-org-id': org,
+            };
+            const response = await fetch(actions["get-metadata"], {
+              method: 'POST',
+              headers: builtHeaders,
+              body: JSON.stringify({ url: location.pathname })
+            });
+            const responseData = await response.json();
+            setTenant(responseData.tenant)
+          }
+         
+        } catch (error) {
+          setError(error);
+        }
+         finally {
+          setLoading(false);
+        }
+      }
+      extensionCORS();
+    },[extensionId,guestConnection]);
  
  
   const onCarSeriesChangeHandler = (value) => {
     setSelectedCarSeries(value);
-     setCarModelRange([]);
+    setCarModelRange([]);
     guestConnection?.host?.field.onChange(value);
   };
  
   const onCarModelRangeChangeHandler = (value) => {
     setSelectedCarModelRange(value);
     setSeriesCode(value);
-    // setCarModels([]);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
  
   };
@@ -75,42 +118,36 @@ export default function () {
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${modelCode}, ${selectedCarModels}, ${selected}, ${value}`);
   };
  
-  const URL = 'https://productdata-int1.api.bmw/pdh/technicaldata/v2.0/model/bmw+marketB4R1+bmw_rs+sr_RS/latest';
- 
- 
   useEffect(() => {
     const getDataValue = async () => {
-      const connection = await attach({ id: extensionId });
-      setGuestConnection(connection);
- 
-      const modelData = await connection.host.field.getValue();
-      setModel([modelData]);
- 
- 
-      if (modelData) {
-        const [series, modelRange, modelCode, selectedCarModel, isSelected, transmissionCode] = modelData.split(', ');
- 
-        setSelectedCarSeries(series);
-        setSelectedCarModelRange(modelRange);
-        setSelectedCarModels(selectedCarModel);
-        setModelCode(modelCode);
-        setSelected(isSelected === 'true');
-        setSelectedTransmissionCode(transmissionCode);
+      if(guestConnection){
+        const modelData = await guestConnection.host.field.getValue();
+        setModel([modelData]);
+        if (modelData) {
+          const [series, modelRange, modelCode, selectedCarModel, isSelected, transmissionCode] = modelData.split(', ');
+   
+          setSelectedCarSeries(series);
+          setSelectedCarModelRange(modelRange);
+          setSelectedCarModels(selectedCarModel);
+          setModelCode(modelCode);
+          setSelected(isSelected === 'true');
+          setSelectedTransmissionCode(transmissionCode);
+        }
       }
     }
     getDataValue();
-  }, []);
+  }, [guestConnection]);
  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(CAR_MODEL_API_URL);
+        if(tenant){
+          const response = await fetch(CAR_MODEL_API_URL);
         const data = await response.json();
         setData(data);
         const seriesCodes = data?.models?.map((item) => item?.seriesCode);
         setCarSerieses(seriesCodes);
-        const connection = await attach({ id: extensionId });
-        setGuestConnection(connection);
+        }
       } catch (error) {
       } finally {
         setLoading(false);
@@ -118,7 +155,7 @@ export default function () {
     };
  
     fetchData();
-  }, []);
+  }, [tenant]);
  
   useEffect(() => {
     const handleSeriesChange = async () => {
@@ -126,10 +163,6 @@ export default function () {
         try {
           const modelRange = data?.models?.filter(item => item?.seriesCode === selectedCarSeries).map(item => item?.modelRangeCode);
           setCarModelRange(modelRange);
-          const connection = await attach({ id: extensionId });
-          setGuestConnection(connection);
-          const currrentCarModel = await connection.host.field.getValue();
-          console.log(">> currrentCarModel", currrentCarModel);
         } catch (error) {
         }
       }
@@ -151,9 +184,6 @@ export default function () {
             };
           });
           setCarModels(modelCodesDetails);
-          console.log(model);
-          const connection = await attach({ id: extensionId });
-          setGuestConnection(connection);
         } catch (error) {
         }
       }
@@ -167,10 +197,13 @@ export default function () {
     const fetchVehiclesData = async () => {
       if (!modelCode) return;
       try {
-        const modelDetailUrl = `${URL}/${modelCode}`;
-        const modelDetailResponse = await axios.get(modelDetailUrl);
-        const modelDetail = modelDetailResponse?.data;
-        setVehicleData(modelDetail?.vehicles);
+        if(tenant){
+          const modelDetailUrl = `${apiURL}/${modelCode}`;
+          const modelDetailResponse = await axios.get(modelDetailUrl);
+          const modelDetail = modelDetailResponse?.data;
+          setVehicleData(modelDetail?.vehicles);
+        }
+        
       } catch (error) {
       } finally {
         setLoading(false);
@@ -178,8 +211,7 @@ export default function () {
     };
  
     fetchVehiclesData();
-  }, [modelCode]);
- 
+  }, [tenant,modelCode]);
  
   useEffect(() => {
     const groupByTransmission = async () => {
@@ -196,8 +228,6 @@ export default function () {
             return result;
           }, {});
           setCarModelByTransmission(groupedByTransmission);
-          const connection = await attach({ id: extensionId });
-          setGuestConnection(connection);
         } catch (error) {
         }
       }
