@@ -42,12 +42,12 @@ export default function () {
 
   const [selected, setSelected] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const connection = await attach({ id: priConExtensionId })
-      setGuestConnection(connection);
-    })()
-  }, [])
+  // useEffect(() => {
+  //   (async () => {
+  //     const connection = await attach({ id: priConExtensionId })
+  //     setGuestConnection(connection);
+  //   })()
+  // }, [])
 
   const onCarSeriesChangeHandler = (value) => {
     const selectedCarSeries = carSerieses.find(model => model.description === value);
@@ -63,34 +63,43 @@ export default function () {
   const onCarModelRangeChangeHandler = (value) => {
     setSelectedCarModelRange(value);
     setRangeCode(value);
-    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
+    guestConnection?.host?.field.onChange(`${seriesCode},${selectedCarSeries}, ${value}`);
   };
 
   const onVehicleChangeHandler = (value) => {
     setSelectedVehicleType(value);
-    guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
+    guestConnection?.host?.field.onChange(`${seriesCode},${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
   };
 
   //get the values from guestconne
   
   useEffect(() => {
     const getDataValue = async () => {
-      if(guestConnection){
-        const modelData = await guestConnection.host.field.getValue();
+        const connection = await attach({ id: priConExtensionId })
+          setGuestConnection(connection);
+        const modelData = await connection.host.field.getValue();
         setModel([modelData]);
         console.log(modelData);
         if (modelData) {
-          const [description,modelRange,selectedVehicleType ] = modelData.split(', ');
-          console.log(description,modelRange,selectedVehicleType);
-          setSelectedCarSeries(description);
+          const [seriesCode,modelRange,...type ] = modelData.split(', ');
+          console.log(seriesCode,modelRange,type);
+          console.log('model::',modelData.split(', '))
+          setSeriesCode(seriesCode.split(',')[0]);
+          setSelectedCarSeries(seriesCode.split(',')[1]);
+          setSelected(true);
           setSelectedCarModelRange(modelRange);
-          setVehicleTypeData(selectedVehicleType);
-          console.log(modelData.split(', ')[1]);
+          setPreconId([type[0]]);
+          if(type.length >0){
+            setSelectedVehicleType(type[0]+type[1]+type[2]);
+            setVehicleTypeData(type[0]+type[1]+type[2]);
+          }
+          else
+            setVehicleTypeData([]);
+          console.log('modelRange::',modelRange,' selectedVehicleType::',selectedVehicleType, 'vehicletypeData::', vehicleTypeData);
         }
-      }
     }
     getDataValue();
-  }, [guestConnection]);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -141,6 +150,7 @@ export default function () {
         const modelDetailUrl = `${PRECON_VEHICLES_API_URL}/${rangeCode}?vehicle_type=PRECON`;
         const response = await axios.get(modelDetailUrl);
         const preConId = Object.values(response?.data).map(item => item?.id);
+        console.log(preConId);
         setPreconId(preConId);
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
