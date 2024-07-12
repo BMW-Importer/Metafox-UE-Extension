@@ -117,7 +117,6 @@ export default function () {
     setSelectedTransmissionCode(value);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${modelCode}, ${selectedCarModels}, ${selected}, ${value}`);
   };
-
  
   useEffect(() => {
     const getDataValue = async () => {
@@ -241,7 +240,7 @@ export default function () {
   return (
     <Provider theme={lightTheme} colorScheme="light">
       <Flex direction="column">
-        <Form isHidden={loading}  UNSAFE_className="meta-data-form">
+        <Form isHidden={loading} UNSAFE_style={{backgroundColor:'#fdfdfd'}} UNSAFE_className="meta-data-form">
           <Picker
             label="Series"
             necessityIndicator="label"
@@ -273,7 +272,7 @@ export default function () {
           </Picker>
  
           <Picker
-            label="Model Code"
+            label="Model Code (Type Code)"
             necessityIndicator="label"
             onSelectionChange={onCarModelsChangeHandler}
             placeholder="Select a Model Code"
