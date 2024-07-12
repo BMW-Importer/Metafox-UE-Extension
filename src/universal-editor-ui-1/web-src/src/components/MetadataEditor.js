@@ -16,11 +16,8 @@ import {
 import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { extensionId, BASE_URL, MARKET_SEGMENT, LATEST, MODEL_BASE_URL } from "./Constants";
+import { extensionId, BASE_URL, LATEST, MODEL_BASE_URL } from "./Constants";
 import actions from '../config.json';
-//import {getResponse} from '../../../actions/utils.js'
-
-//const CAR_MODEL_API_URL = `${BASE_URL}${MARKET_SEGMENT}${LATEST}`;
 
 export default function () {
   const [guestConnection, setGuestConnection] = useState();
@@ -63,9 +60,6 @@ export default function () {
     useEffect(() => {
       const extensionCORS = async () => {
         try {
-          // const connection = await attach({ id: extensionId });
-          // console.log(connection,"connection established");
-          // setGuestConnection(connection);
           if(guestConnection){
             const state = await guestConnection.host.editorState.get();
             const token = await guestConnection.sharedContext.get('token');
@@ -82,9 +76,7 @@ export default function () {
               headers: builtHeaders,
               body: JSON.stringify({ url: location.pathname })
             });
-            const responseData = await response.json(); 
-            //const responseData = await getResponse(location,token,org);
-            console.log('responseData:', responseData.tenant);
+            const responseData = await response.json();
             setTenant(responseData.tenant)
           }
          
@@ -108,7 +100,6 @@ export default function () {
   const onCarModelRangeChangeHandler = (value) => {
     setSelectedCarModelRange(value);
     setSeriesCode(value);
-    // setCarModels([]);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
  
   };
@@ -130,14 +121,9 @@ export default function () {
  
   useEffect(() => {
     const getDataValue = async () => {
-      // const connection = await attach({ id: extensionId });
-      // setGuestConnection(connection);
- 
       if(guestConnection){
         const modelData = await guestConnection.host.field.getValue();
         setModel([modelData]);
-   
-   
         if (modelData) {
           const [series, modelRange, modelCode, selectedCarModel, isSelected, transmissionCode] = modelData.split(', ');
    
@@ -149,7 +135,6 @@ export default function () {
           setSelectedTransmissionCode(transmissionCode);
         }
       }
-      
     }
     getDataValue();
   }, [guestConnection]);
@@ -164,8 +149,6 @@ export default function () {
         const seriesCodes = data?.models?.map((item) => item?.seriesCode);
         setCarSerieses(seriesCodes);
         }
-        // const connection = await attach({ id: extensionId });
-        // setGuestConnection(connection);
       } catch (error) {
       } finally {
         setLoading(false);
@@ -181,10 +164,6 @@ export default function () {
         try {
           const modelRange = data?.models?.filter(item => item?.seriesCode === selectedCarSeries).map(item => item?.modelRangeCode);
           setCarModelRange(modelRange);
-          // const connection = await attach({ id: extensionId });
-          // setGuestConnection(connection);
-          // const currrentCarModel = await connection.host.field.getValue();
-          // console.log(">> currrentCarModel", currrentCarModel);
         } catch (error) {
         }
       }
@@ -206,9 +185,6 @@ export default function () {
             };
           });
           setCarModels(modelCodesDetails);
-          // console.log(model);
-          // const connection = await attach({ id: extensionId });
-          // setGuestConnection(connection);
         } catch (error) {
         }
       }
@@ -238,7 +214,6 @@ export default function () {
     fetchVehiclesData();
   }, [tenant,modelCode]);
  
- 
   useEffect(() => {
     const groupByTransmission = async () => {
       if (vehicleData.length > 0) {
@@ -254,8 +229,6 @@ export default function () {
             return result;
           }, {});
           setCarModelByTransmission(groupedByTransmission);
-          // const connection = await attach({ id: extensionId });
-          // setGuestConnection(connection);
         } catch (error) {
         }
       }

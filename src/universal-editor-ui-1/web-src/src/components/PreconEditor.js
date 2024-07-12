@@ -20,6 +20,8 @@ import { priConExtensionId,SERIES,MARKET_SEGMENT } from "./Constants";
 const PRECON_MODEL_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/${SERIES}/${MARKET_SEGMENT}`;
 
 export default function () {
+
+
   const [guestConnection, setGuestConnection] = useState();
   const [loading, setLoading] = useState(true);
 
@@ -40,6 +42,13 @@ export default function () {
 
   const [selected, setSelected] = useState(false);
 
+  useEffect(() => {
+    (async () => {
+      const connection = await attach({ id: priConExtensionId })
+      setGuestConnection(connection);
+    })()
+  }, [])
+
   const onCarSeriesChangeHandler = (value) => {
     const selectedCarSeries = carSerieses.find(model => model.description === value);
     if (selectedCarSeries) {
@@ -47,28 +56,18 @@ export default function () {
       setSelectedCarSeries(description);
       setSeriesCode(seriesCode);
       setSelected(true);
-      // setCarModelRange([]); // Clear car model range options
-      // setSelectedCarModelRange(''); // Clear selected car model range
-      // localStorage.setItem('selectedCarSeries', description);
-      // localStorage.setItem('selectedCode', seriesCode);
-      // localStorage.removeItem('selectedCarModelRange');
-      guestConnection?.host?.field.onChange(seriesCode);
+      guestConnection?.host?.field.onChange(`${seriesCode}, ${description}`);
   }
   };
   
   const onCarModelRangeChangeHandler = (value) => {
     setSelectedCarModelRange(value);
     setRangeCode(value);
-    // setVehicleTypeData([]); // Clear vehicle type data
-    // setSelectedVehicleType(''); 
-    // localStorage.setItem('selectedCarModelRange', value);
-    // localStorage.removeItem('selectedVehicleType');
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
   };
 
   const onVehicleChangeHandler = (value) => {
     setSelectedVehicleType(value);
-    // localStorage.setItem('selectedVehicleType', value);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
   };
 
@@ -76,23 +75,22 @@ export default function () {
   
   useEffect(() => {
     const getDataValue = async () => {
-      const connection = await attach({ id: priConExtensionId });
-      setGuestConnection(connection);
- 
       if(guestConnection){
         const modelData = await guestConnection.host.field.getValue();
         setModel([modelData]);
         console.log(modelData);
         if (modelData) {
-          const [description, modelRange,selectedVehicleType ] = modelData.split(', ');
+          const [description,modelRange,selectedVehicleType ] = modelData.split(', ');
+          console.log(description,modelRange,selectedVehicleType);
           setSelectedCarSeries(description);
           setSelectedCarModelRange(modelRange);
           setVehicleTypeData(selectedVehicleType);
+          console.log(modelData.split(', ')[1]);
         }
       }
     }
     getDataValue();
-  }, []);
+  }, [guestConnection]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,12 +99,6 @@ export default function () {
         const data = await response.json();
         const seriesCodes = Object.values(data).map(item => ({seriesCode:item.seriesCode, description:item.description}));
         setCarSerieses(Object.values(seriesCodes));
-        // const savedCarSeries = localStorage.getItem('selectedCarSeries');
-        // const savedSeries = localStorage.getItem('selectedCode');
-        // if (savedCarSeries && savedSeries) {
-        //   setSelectedCarSeries(savedCarSeries);
-        //   setSeriesCode(savedSeries);
-        // }
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
       } catch (error) {
@@ -129,10 +121,6 @@ export default function () {
         const modelDetail = modelDetailResponse?.data;
         const rangeCode = Object.values(modelDetail).map(item => item.modelRangeCode);
         setCarModelRange(Object.values(rangeCode));
-        // const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
-        // if (savedCarModelRange) {
-        //   setSelectedCarModelRange(savedCarModelRange);
-        // }
         const connection = await attach({ id: priConExtensionId });
         setGuestConnection(connection);
       } catch (error) {
@@ -187,9 +175,6 @@ useEffect(() => {
         return parts.join(', ');
     });
       setVehicleTypeData(vehicles);
-      // const savedVehicleTypeData = localStorage.getItem('selectedVehicleType');
-      // if (savedVehicleTypeData) setSelectedVehicleType(savedVehicleTypeData);
-
       const connection = await attach({ id: priConExtensionId });
       setGuestConnection(connection);
     } catch (error) {
@@ -201,29 +186,6 @@ useEffect(() => {
 
   fetchVehicleByPreConId();
 }, [preconId]);
-
-// useEffect(() => {
-//   // Enable dropdowns if values are stored in localStorage
-//   const savedCarSeries = localStorage.getItem('selectedCarSeries');
-//   const savedCarModelRange = localStorage.getItem('selectedCarModelRange');
-//   const savedVehicleType = localStorage.getItem('selectedVehicleType');
-//   const savedSeries = localStorage.getItem('selectedCode');
-
-
-//   if (savedCarSeries && savedSeries) {
-//     setSelectedCarSeries(savedCarSeries);
-//     setSeriesCode(savedSeries);
-//     setSelected(true);
-//   }
-//   if (savedCarModelRange) {
-//     setSelectedCarModelRange(savedCarModelRange);
-//     setRangeCode(savedCarModelRange);
-//   }
-//   if (savedVehicleType) {
-//     setSelectedVehicleType(savedVehicleType);
-//   }
-// }, []);
-
 
   return (
     <Provider theme={lightTheme} colorScheme="light">
