@@ -15,13 +15,10 @@ import {
 import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { priConExtensionId, SERIES, MARKET_SEGMENT } from "./Constants";
-
-const PRECON_MODEL_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/${SERIES}/${MARKET_SEGMENT}`;
+import { priConExtensionId, SERIES, RANGE, VEHICLES, PRECON_BASE_URL, VEHICLE } from "./Constants";
+import actions from '../config.json';
 
 export default function () {
-
-
   const [guestConnection, setGuestConnection] = useState();
   const [loading, setLoading] = useState(true);
 
@@ -41,13 +38,51 @@ export default function () {
   const [model, setModel] = useState([]);
 
   const [selected, setSelected] = useState(false);
+  const[tenant, setTenant] =useState('');
+  const[error, setError] =useState(null);
 
-  // useEffect(() => {
-  //   (async () => {
-  //     const connection = await attach({ id: priConExtensionId })
-  //     setGuestConnection(connection);
-  //   })()
-  // }, [])
+
+  const PRECON_MODEL_API_URL = `${PRECON_BASE_URL}${SERIES}${tenant}`;
+
+  useEffect(() => {
+    (async () => {
+      const connection = await attach({ id: priConExtensionId })
+      setGuestConnection(connection);
+    })()
+  }, [])
+
+  useEffect(() => {
+    const extensionCORS = async () => {
+      try {
+        if(guestConnection){
+          const state = await guestConnection.host.editorState.get();
+          const token = await guestConnection.sharedContext.get('token');
+          const org = await guestConnection.sharedContext.get('orgId');
+          const location = new URL(state.location);
+          const builtHeaders = {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+              'x-aem-host': location.protocol + '//' + location.host,
+              'x-gw-ims-org-id': org,
+          };
+          const response = await fetch(actions["get-metadata"], {
+            method: 'POST',
+            headers: builtHeaders,
+            body: JSON.stringify({ url: location.pathname })
+          });
+          const responseData = await response.json();
+          setTenant(responseData.tenant)
+        }
+       
+      } catch (error) {
+        setError(error);
+      }
+       finally {
+        setLoading(false);
+      }
+    }
+    extensionCORS();
+  },[priConExtensionId,guestConnection]);
 
   const onCarSeriesChangeHandler = (value) => {
     const selectedCarSeries = carSerieses.find(model => model.description === value);
@@ -71,38 +106,36 @@ export default function () {
     guestConnection?.host?.field.onChange(`${seriesCode},${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
   };
 
-  //get the values from guestconne
-
   useEffect(() => {
     const getDataValue = async () => {
-      const connection = await attach({ id: priConExtensionId })
-      setGuestConnection(connection);
-      const modelData = await connection.host.field.getValue();
-      setModel([modelData]);
-      if (modelData) {
-        const [seriesCode, modelRange, ...type] = modelData.split(', ');
-        setSeriesCode(seriesCode.split(',')[0]);
-        setSelectedCarSeries(seriesCode.split(',')[1]);
-        setSelected(true);
-        setRangeCode(modelRange);
-        setSelectedCarModelRange(modelRange);
-        setPreconId([type[0]]);
-        setVehicleTypeData(type);
-        setSelectedVehicleType(type.join(', '));
-      }
+      if(guestConnection){
+        const modelData = await guestConnection.host.field.getValue();
+        setModel([modelData]);
+        if (modelData) {
+          const [seriesCode, modelRange, ...type] = modelData.split(', ');
+          setSeriesCode(seriesCode.split(',')[0]);
+          setSelectedCarSeries(seriesCode.split(',')[1]);
+          setSelected(true);
+          setRangeCode(modelRange);
+          setSelectedCarModelRange(modelRange);
+          setPreconId([type[0]]);
+          setVehicleTypeData(type);
+          setSelectedVehicleType(type.join(', '));
+        }
+      }  
     }
     getDataValue();
-  }, []);
+  }, [guestConnection]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(PRECON_MODEL_API_URL);
-        const data = await response.json();
-        const seriesCodes = Object.values(data).map(item => ({ seriesCode: item.seriesCode, description: item.description }));
-        setCarSerieses(Object.values(seriesCodes));
-        const connection = await attach({ id: priConExtensionId });
-        setGuestConnection(connection);
+        if(tenant){
+          const response = await fetch(PRECON_MODEL_API_URL);
+          const data = await response.json();
+          const seriesCodes = Object.values(data).map(item => ({ seriesCode: item.seriesCode, description: item.description }));
+          setCarSerieses(Object.values(seriesCodes));
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -111,20 +144,21 @@ export default function () {
     };
 
     fetchData();
-  }, []);
-  //modelrange
-  const URL = `https://productdata.api.bmw/pdh/precons/v1.0/ranges/${MARKET_SEGMENT}`;
+  }, [tenant]);
+
+
+  const preconapiURL = `${PRECON_BASE_URL}${RANGE}${tenant}`;
   useEffect(() => {
     const fetchModelRange = async () => {
       if (!seriesCode) return;
       try {
-        const modelDetailUrl = `${URL}/${seriesCode}`;
-        const modelDetailResponse = await axios.get(modelDetailUrl);
-        const modelDetail = modelDetailResponse?.data;
-        const rangeCode = Object.values(modelDetail).map(item => item.modelRangeCode);
-        setCarModelRange(Object.values(rangeCode));
-        const connection = await attach({ id: priConExtensionId });
-        setGuestConnection(connection);
+        if(tenant){
+          const modelDetailUrl = `${preconapiURL}/${seriesCode}`;
+          const modelDetailResponse = await axios.get(modelDetailUrl);
+          const modelDetail = modelDetailResponse?.data;
+          const rangeCode = Object.values(modelDetail).map(item => item.modelRangeCode);
+          setCarModelRange(Object.values(rangeCode));
+        }
       } catch (error) {
         console.error('Error fetching details for model', error);
       } finally {
@@ -133,19 +167,19 @@ export default function () {
     };
 
     fetchModelRange();
-  }, [seriesCode]);
+  }, [tenant,seriesCode]);
 
-  const PRECON_VEHICLES_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/vehicles/${MARKET_SEGMENT}`
+  const PRECON_VEHICLES_API_URL = `${PRECON_BASE_URL}${VEHICLES}${tenant}`
   useEffect(() => {
     const fetchVehicles = async () => {
       if (!rangeCode) return;
       try {
-        const modelDetailUrl = `${PRECON_VEHICLES_API_URL}/${rangeCode}?vehicle_type=PRECON`;
-        const response = await axios.get(modelDetailUrl);
-        const preConId = Object.values(response?.data).map(item => item?.id);
-        setPreconId(preConId);
-        const connection = await attach({ id: priConExtensionId });
-        setGuestConnection(connection);
+        if(tenant){
+          const modelDetailUrl = `${PRECON_VEHICLES_API_URL}/${rangeCode}?vehicle_type=PRECON`;
+          const response = await axios.get(modelDetailUrl);
+          const preConId = Object.values(response?.data).map(item => item?.id);
+          setPreconId(preConId);
+        }
       } catch (error) {
         console.error('Error fetching details for model', error);
       } finally {
@@ -154,31 +188,30 @@ export default function () {
     };
 
     fetchVehicles();
-  }, [rangeCode]);
+  }, [tenant,rangeCode]);
 
-  const PRECON_ID_VEHICLE_API_URL = `https://productdata.api.bmw/pdh/precons/v1.0/vehicle/${MARKET_SEGMENT}`
+  const PRECON_ID_VEHICLE_API_URL = `${PRECON_BASE_URL}${VEHICLE}${tenant}`
   useEffect(() => {
     const fetchVehicleByPreConId = async () => {
       if (!preconId.length) return;
       try {
-        const vehicleDataPromises = preconId.map(async preconId => {
-          const modelDetailUrl = `${PRECON_ID_VEHICLE_API_URL}/${preconId}`;
-          const response = await axios.get(modelDetailUrl);
-          return response.data;
-        });
-
-        const vehiclesData = await Promise.all(vehicleDataPromises);
-        const vehicles = vehiclesData.map(vehicle => {
-          const { id, name, headline } = vehicle;
-          let parts = [];
-          if (id) parts.push(id);
-          if (name) parts.push(name);
-          if (headline) parts.push(headline);
-          return parts.join(', ');
-        });
-        setVehicleTypeData(vehicles);
-        const connection = await attach({ id: priConExtensionId });
-        setGuestConnection(connection);
+        if(tenant){
+          const vehicleDataPromises = preconId.map(async preconId => {
+            const modelDetailUrl = `${PRECON_ID_VEHICLE_API_URL}/${preconId}`;
+            const response = await axios.get(modelDetailUrl);
+            return response.data;
+          });
+          const vehiclesData = await Promise.all(vehicleDataPromises);
+          const vehicles = vehiclesData.map(vehicle => {
+            const { id, name, headline } = vehicle;
+            let parts = [];
+            if (id) parts.push(id);
+            if (name) parts.push(name);
+            if (headline) parts.push(headline);
+            return parts.join(', ');
+          });
+          setVehicleTypeData(vehicles);
+        }
       } catch (error) {
         console.error('Error fetching details for model', error);
       } finally {
@@ -187,7 +220,7 @@ export default function () {
     };
 
     fetchVehicleByPreConId();
-  }, [preconId]);
+  }, [tenant,preconId]);
 
   return (
     <Provider theme={lightTheme} colorScheme="light">
