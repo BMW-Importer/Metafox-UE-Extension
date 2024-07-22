@@ -30,6 +30,10 @@ function ExtensionRegistration() {
                 dataType: "shopbylookcustomtype",
                 url: '/#/shopbylook-editor',
               },
+              {
+                dataType: "techdatacustomfield",
+                url: '/#/techdata-editor',
+              }
             ];
           },
         },

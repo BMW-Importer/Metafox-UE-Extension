@@ -10,6 +10,7 @@ import MetadataEditor from "./MetadataEditor";
 import PreconEditor from "./PreconEditor";
 import TypeRenderer from "./TypeRenderer";
 import ShopByLookEditor from "./ShopByLookEditor";
+import Techdatacustomfield from "./Techdatacustomfield"
 
 function App() {
   return (
@@ -32,6 +33,10 @@ function App() {
           <Route
             exact path="shopbylook-editor"
             element={<ShopByLookEditor />}
+          />
+           <Route
+            exact path="techdata-editor"
+            element={<Techdatacustomfield />}
           />
            <Route
                 exact path="renderer/:rendererId"
