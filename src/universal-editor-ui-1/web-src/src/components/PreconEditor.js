@@ -103,7 +103,8 @@ export default function () {
 
   const onVehicleChangeHandler = (value) => {
     setSelectedVehicleType(value);
-    guestConnection?.host?.field.onChange(`${seriesCode},${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
+    const preconId = value?.slice(0, 4);
+    guestConnection?.host?.field.onChange(`${seriesCode},${selectedCarSeries}, ${selectedCarModelRange}, ${preconId}, ${value}`);
   };
 
   useEffect(() => {
