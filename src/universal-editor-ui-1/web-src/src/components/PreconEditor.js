@@ -206,9 +206,9 @@ export default function () {
             const { id, name, headline } = vehicle;
             let parts = [];
             if (id) parts.push(id);
-            if (name) parts.push(name);
             if (headline) parts.push(headline);
-            return parts.join(', ');
+            if (name) parts.push(name);
+            return parts.join('  ');
           });
           setVehicleTypeData(vehicles);
         }
