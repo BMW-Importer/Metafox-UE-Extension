@@ -210,6 +210,7 @@ export default function () {
             if (headline) parts.push(headline);
             if (name) parts.push(name);
             return parts.join('  ');
+
           });
           setVehicleTypeData(vehicles);
         }
