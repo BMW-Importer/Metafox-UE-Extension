@@ -103,7 +103,8 @@ export default function () {
 
   const onVehicleChangeHandler = (value) => {
     setSelectedVehicleType(value);
-    guestConnection?.host?.field.onChange(`${seriesCode},${selectedCarSeries}, ${selectedCarModelRange}, ${value}`);
+    const preconId = value?.slice(0, 4);
+    guestConnection?.host?.field.onChange(`${seriesCode},${selectedCarSeries}, ${selectedCarModelRange}, ${preconId}, ${value}`);
   };
 
   useEffect(() => {
@@ -209,6 +210,7 @@ export default function () {
             if (headline) parts.push(headline);
             if (name) parts.push(name);
             return parts.join('  ');
+
           });
           setVehicleTypeData(vehicles);
         }
