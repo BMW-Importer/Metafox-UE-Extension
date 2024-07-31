@@ -265,7 +265,6 @@ export default function () {
             isDisabled={!selectedCarModelRange}
             selectedKey={selectedVehicleType}
           >
-            {/* Render "(NO Value)" option if preconData is empty or null */}
             {vehicleTypeData && vehicleTypeData.length > 0 ? (
               [...new Set(vehicleTypeData)].map((item) => (
                 <Item key={item} textValue={item}>
