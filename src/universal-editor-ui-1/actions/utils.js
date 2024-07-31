@@ -156,20 +156,20 @@ async function getAemHeaders(params) {
   const headers = new Headers();
   const imsToken = getBearerToken(params);
 
-  // const csrfResponse = await fetch(`${aemHost}/libs/granite/csrf/token.json`, {
-  //   'method': 'GET',
-  //   'headers': {
-  //     'Accept': '*/*',
-  //     'Authorization': `Bearer ${imsToken}`,
-  //     'X-Api-Key': 'exc_app',
-  //     'X-Gw-Ims-Org-Id': imsOrg,
-  //   },
-  // });
-  // const csrf = await csrfResponse.json();
+  const csrfResponse = await fetch(`${aemHost}/libs/granite/csrf/token.json`, {
+    'method': 'GET',
+    'headers': {
+      'Accept': '*/*',
+      'Authorization': `Bearer ${imsToken}`,
+      'X-Api-Key': 'exc_app',
+      'X-Gw-Ims-Org-Id': imsOrg,
+    },
+  });
+  const csrf = await csrfResponse.json();
 
   headers.set('X-Api-Key', 'aem-headless-cf-admin');
   headers.set('X-Gw-Ims-Org-Id', imsOrg);
-  // headers.set('CSRF-Token', csrf.token);
+  headers.set('CSRF-Token', csrf.token);
   headers.set('X-Aem-Affinity-Type', 'api');
   headers.set('Authorization', `Bearer ${imsToken}`);
 
@@ -189,6 +189,24 @@ function extractNameFromPath(path) {
     path: pathArray.join('/'),
   }
 }
+
+// import actions from '../web-src/src/config.json';
+// async function getResponse(location,token,org) {
+//   const builtHeaders = {
+//     "Content-Type": "application/json",
+//     "Authorization": `Bearer ${token}`,
+//     'x-aem-host': location.protocol + '//' + location.host,
+//     'x-gw-ims-org-id': org,
+//   };
+//   const response = await fetch(actions["get-metadata"], {
+//     method: 'POST',
+//     headers: builtHeaders,
+//     body: JSON.stringify({ url: location.pathname })
+//   });
+//   const responseData = await response.json();
+//   console.log('responseData:', responseData.tenant);
+//   return responseData;
+// }
 
 module.exports = {
   errorResponse,

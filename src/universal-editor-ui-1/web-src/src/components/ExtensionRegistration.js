@@ -11,22 +11,6 @@ function ExtensionRegistration() {
     const guestConnection = await register({
       id: extensionId,
       methods: {
-        rightPanel: {
-          addRails() {
-            return [
-              // @todo YOUR HEADER BUTTONS DECLARATION SHOULD BE HERE
-              {
-                extension: 'metadata-editor',
-                id: 'metadata-editor',
-                label: 'Metadata Editor',
-                icon: 'FileGear',
-                header: 'Metadata Editor',
-                hotkey: 'M',
-                url: "/index.html#/metadata-editor",
-              }
-            ];
-          },
-        },
         canvas: {
           getRenderers() {
             return [
@@ -35,9 +19,21 @@ function ExtensionRegistration() {
                 url: '/#/metadata-editor'
               },
               {
-                dataType: "text",
-                url: '/#/renderer/1',
+                dataType: "customtype",
+                url: '/#/metadata-editor',
               },
+              {
+                dataType: "preconcustomtype",
+                url: '/#/precon-editor',
+              },
+              {
+                dataType: "shopbylookcustomtype",
+                url: '/#/shopbylook-editor',
+              },
+              {
+                dataType: "techdatacustomfield",
+                url: '/#/techdata-editor',
+              }
             ];
           },
         },
