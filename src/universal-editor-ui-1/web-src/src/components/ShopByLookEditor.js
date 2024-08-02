@@ -107,7 +107,6 @@ import {
         if(guestConnection){
           const modelData = await guestConnection.host.field.getValue();
           setModel([modelData]);
-          console.log(modelData);
           if (modelData) {
             const [seriesCode, modelRange, ...type] = modelData.split(', ');
             setSeriesCode(seriesCode.split(',')[0]);
