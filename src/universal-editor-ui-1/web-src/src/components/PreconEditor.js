@@ -120,8 +120,8 @@ export default function () {
           setRangeCode(modelRange);
           setSelectedCarModelRange(modelRange);
           setPreconId([type[0]]);
-          setVehicleTypeData(type);
-          setSelectedVehicleType(type.join(', '));
+          setVehicleTypeData([type[1]]);
+          setSelectedVehicleType([type[1]].join(', '));
         }
       }  
     }
