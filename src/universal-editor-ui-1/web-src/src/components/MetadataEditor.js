@@ -78,6 +78,7 @@ export default function () {
             });
             const responseData = await response.json();
             setTenant(responseData.tenant)
+            console.log(responseData);
           }
          
         } catch (error) {

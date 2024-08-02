@@ -15,7 +15,7 @@ import {
 import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { priConExtensionId, SERIES, RANGE, VEHICLES, PRECON_BASE_URL, VEHICLE } from "./Constants";
+import { priConExtensionId, SERIES, RANGE, VEHICLES, PRECON_PROD_URL, BASE_DEV, VEHICLE } from "./Constants";
 import actions from '../config.json';
 
 export default function () {
@@ -40,9 +40,20 @@ export default function () {
   const [selected, setSelected] = useState(false);
   const[tenant, setTenant] =useState('');
   const[error, setError] =useState(null);
+  const[envi, setEnvi] = useState('');
 
 
-  const PRECON_MODEL_API_URL = `${PRECON_BASE_URL}${SERIES}${tenant}`;
+  let PRECON_MODEL_API_URL = ``;
+  if(setEnvi === 'dev'){
+    PRECON_MODEL_API_URL = `${PRECON_PROD_URL}${SERIES}${tenant}`;
+    console.log(PRECON_MODEL_API_URL);
+  }
+  else{
+    PRECON_MODEL_API_URL = `${PRECON_PROD_URL}${SERIES}${tenant}`;
+    console.log(PRECON_MODEL_API_URL);
+  }
+
+
 
   useEffect(() => {
     (async () => {
@@ -71,7 +82,8 @@ export default function () {
             body: JSON.stringify({ url: location.pathname })
           });
           const responseData = await response.json();
-          setTenant(responseData.tenant)
+          setTenant(responseData.tenant);
+          setEnvi(responseData.env);
         }
        
       } catch (error) {
