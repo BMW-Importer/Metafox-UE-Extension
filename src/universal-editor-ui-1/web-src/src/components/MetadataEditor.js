@@ -115,7 +115,6 @@ export default function () {
     setSelectedCarModelRange(value);
     setSeriesCode(value);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
- 
   };
  
   const onCarModelsChangeHandler = (value) => {
