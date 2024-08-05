@@ -15,7 +15,7 @@ import {
 import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { priConExtensionId, SERIES, RANGE, VEHICLES, PRECON_PROD_URL, PRECON_ENV_URL, VEHICLE } from "./Constants";
+import { priConExtensionId, SERIES, RANGE, VEHICLES, PRECON_PROD_URL, PRECON_DEV_URL, VEHICLE } from "./Constants";
 import actions from '../config.json';
 
 export default function () {
@@ -48,10 +48,10 @@ export default function () {
   let PRECON_VEHICLES_API_URL = ``;
   let PRECON_ID_VEHICLE_API_URL = ``;
   if(setEnvi === 'dev'){
-    PRECON_MODEL_API_URL = `${PRECON_ENV_URL}${SERIES}${tenant}`;
-    preconapiURL = `${PRECON_ENV_URL}${RANGE}${tenant}`;
-    PRECON_VEHICLES_API_URL = `${PRECON_ENV_URL}${VEHICLES}${tenant}`;
-    PRECON_ID_VEHICLE_API_URL = `${PRECON_ENV_URL}${VEHICLE}${tenant}`;
+    PRECON_MODEL_API_URL = `${PRECON_DEV_URL}${SERIES}${tenant}`;
+    preconapiURL = `${PRECON_DEV_URL}${RANGE}${tenant}`;
+    PRECON_VEHICLES_API_URL = `${PRECON_DEV_URL}${VEHICLES}${tenant}`;
+    PRECON_ID_VEHICLE_API_URL = `${PRECON_DEV_URL}${VEHICLE}${tenant}`;
   }
   else{
     PRECON_MODEL_API_URL = `${PRECON_PROD_URL}${SERIES}${tenant}`;

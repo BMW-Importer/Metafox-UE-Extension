@@ -8,7 +8,7 @@ module.exports = {
   MODEL_BASE_DEV_URL : "https://productdata-int1.api.bmw/pdh/technicaldata/v2.0/model/",
   MODEL_BASE_PROD_URL : "https://productdata.api.bmw/pdh/technicaldata/v2.0/model/",
   LATEST : "/latest",
-  PRECON_ENV_URL : "https://productdata-int1.api.bmw/pdh/precons/v1.0",
+  PRECON_DEV_URL : "https://productdata-int1.api.bmw/pdh/precons/v1.0",
   PRECON_PROD_URL : "https://productdata.api.bmw/pdh/precons/v1.0",
   SERIES : "/series/",
   RANGE : "/ranges/",
