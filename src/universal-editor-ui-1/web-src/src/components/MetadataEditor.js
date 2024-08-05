@@ -16,7 +16,7 @@ import {
 import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { extensionId, BASE_URL, LATEST, MODEL_BASE_URL } from "./Constants";
+import { extensionId, BASE_DEV, BASE_PROD, LATEST, MODEL_BASE_DEV_URL, MODEL_BASE_PROD_URL  } from "./Constants";
 import actions from '../config.json';
 
 export default function () {
@@ -45,17 +45,30 @@ export default function () {
   const[tenant, setTenant] =useState('');
   const [model, setModel] = useState([]);
   const[error, setError] =useState(null);
+  const [envi, setEnvi] = useState('');
 
-  const CAR_MODEL_API_URL = `${BASE_URL}${tenant}${LATEST}`;
+  let CAR_MODEL_API_URL = ``;
+  if(setEnvi === 'dev'){
+    CAR_MODEL_API_URL = `${BASE_DEV}${tenant}${LATEST}`;
+  }
+  else{
+    CAR_MODEL_API_URL = `${BASE_PROD}${tenant}${LATEST}`;
+  }
 
-  const apiURL = `${MODEL_BASE_URL}${tenant}${LATEST}`;
+  let apiURL = ``;
+  if(setEnvi === 'dev'){
+    apiURL = `${MODEL_BASE_DEV_URL}${tenant}${LATEST}`;
+  }
+  else{
+    apiURL = `${MODEL_BASE_PROD_URL}${tenant}${LATEST}`;
+  }
 
   useEffect(() => {
     (async () => {
       const connection = await attach({ id: extensionId })
       setGuestConnection(connection);
     })()
-  }, [])
+  }, []);
   
     useEffect(() => {
       const extensionCORS = async () => {
@@ -77,7 +90,8 @@ export default function () {
               body: JSON.stringify({ url: location.pathname })
             });
             const responseData = await response.json();
-            setTenant(responseData.tenant)
+            setTenant(responseData.tenant);
+            setEnvi(responseData.env);
           }
          
         } catch (error) {
@@ -101,7 +115,6 @@ export default function () {
     setSelectedCarModelRange(value);
     setSeriesCode(value);
     guestConnection?.host?.field.onChange(`${selectedCarSeries}, ${value}`);
- 
   };
  
   const onCarModelsChangeHandler = (value) => {

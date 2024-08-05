@@ -15,7 +15,7 @@ import {
   } from "@adobe/react-spectrum";
   import { attach } from "@adobe/uix-guest";
   import React, { useEffect, useState } from "react";
-  import { techDataExtensionID, BASE_URL, LATEST} from "./Constants";
+  import { techDataExtensionID, BASE_DEV, BASE_PROD, LATEST} from "./Constants";
   import actions from '../config.json';
   
   export default function () {
@@ -36,15 +36,22 @@ import {
     const[tenant, setTenant] =useState('');
     const [model, setModel] = useState([]);
     const[error, setError] =useState(null);
-  
-    const CAR_MODEL_API_URL = `${BASE_URL}${tenant}${LATEST}`;
+    const [envi, setEnvi] = useState('');
+
+    let CAR_MODEL_API_URL = ``;
+    if(setEnvi === 'dev'){
+      CAR_MODEL_API_URL = `${BASE_DEV}${tenant}${LATEST}`;
+    }
+    else{
+      CAR_MODEL_API_URL = `${BASE_PROD}${tenant}${LATEST}`;
+    }
   
     useEffect(() => {
       (async () => {
         const connection = await attach({ id: techDataExtensionID })
         setGuestConnection(connection);
       })()
-    }, [])
+    }, []);
     
       useEffect(() => {
         const extensionCORS = async () => {
@@ -66,7 +73,8 @@ import {
                 body: JSON.stringify({ url: location.pathname })
               });
               const responseData = await response.json();
-              setTenant(responseData.tenant)
+              setTenant(responseData.tenant);
+              setEnvi(responseData.env);
             }
            
           } catch (error) {

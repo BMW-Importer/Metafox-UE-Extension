@@ -15,7 +15,7 @@ import {
 import { attach } from "@adobe/uix-guest";
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { priConExtensionId, SERIES, RANGE, VEHICLES, PRECON_BASE_URL, VEHICLE } from "./Constants";
+import { priConExtensionId, SERIES, RANGE, VEHICLES, PRECON_PROD_URL, PRECON_DEV_URL, VEHICLE } from "./Constants";
 import actions from '../config.json';
 
 export default function () {
@@ -40,16 +40,32 @@ export default function () {
   const [selected, setSelected] = useState(false);
   const[tenant, setTenant] =useState('');
   const[error, setError] =useState(null);
+  const[envi, setEnvi] = useState('');
 
 
-  const PRECON_MODEL_API_URL = `${PRECON_BASE_URL}${SERIES}${tenant}`;
+  let PRECON_MODEL_API_URL = ``;
+  let preconapiURL = ``;
+  let PRECON_VEHICLES_API_URL = ``;
+  let PRECON_ID_VEHICLE_API_URL = ``;
+  if(setEnvi === 'dev'){
+    PRECON_MODEL_API_URL = `${PRECON_DEV_URL}${SERIES}${tenant}`;
+    preconapiURL = `${PRECON_DEV_URL}${RANGE}${tenant}`;
+    PRECON_VEHICLES_API_URL = `${PRECON_DEV_URL}${VEHICLES}${tenant}`;
+    PRECON_ID_VEHICLE_API_URL = `${PRECON_DEV_URL}${VEHICLE}${tenant}`;
+  }
+  else{
+    PRECON_MODEL_API_URL = `${PRECON_PROD_URL}${SERIES}${tenant}`;
+    preconapiURL = `${PRECON_PROD_URL}${RANGE}${tenant}`;
+    PRECON_VEHICLES_API_URL = `${PRECON_PROD_URL}${VEHICLES}${tenant}`;
+    PRECON_ID_VEHICLE_API_URL = `${PRECON_PROD_URL}${VEHICLE}${tenant}`;
+  }
 
   useEffect(() => {
     (async () => {
       const connection = await attach({ id: priConExtensionId })
       setGuestConnection(connection);
     })()
-  }, [])
+  }, []);
 
   useEffect(() => {
     const extensionCORS = async () => {
@@ -71,7 +87,8 @@ export default function () {
             body: JSON.stringify({ url: location.pathname })
           });
           const responseData = await response.json();
-          setTenant(responseData.tenant)
+          setTenant(responseData.tenant);
+          setEnvi(responseData.env);
         }
        
       } catch (error) {
@@ -148,7 +165,6 @@ export default function () {
   }, [tenant]);
 
 
-  const preconapiURL = `${PRECON_BASE_URL}${RANGE}${tenant}`;
   useEffect(() => {
     const fetchModelRange = async () => {
       if (!seriesCode) return;
@@ -170,7 +186,6 @@ export default function () {
     fetchModelRange();
   }, [tenant,seriesCode]);
 
-  const PRECON_VEHICLES_API_URL = `${PRECON_BASE_URL}${VEHICLES}${tenant}`
   useEffect(() => {
     const fetchVehicles = async () => {
       if (!rangeCode) return;
@@ -191,7 +206,6 @@ export default function () {
     fetchVehicles();
   }, [tenant,rangeCode]);
 
-  const PRECON_ID_VEHICLE_API_URL = `${PRECON_BASE_URL}${VEHICLE}${tenant}`
   useEffect(() => {
     const fetchVehicleByPreConId = async () => {
       if (!preconId.length) return;

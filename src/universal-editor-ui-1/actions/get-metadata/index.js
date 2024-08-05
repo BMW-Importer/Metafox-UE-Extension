@@ -63,10 +63,12 @@ async function main (params) {
     const tenant = pageHtml.match(/<meta.*name="tenant".*content="(.*)".*\/>/)[1];
     //georegion
     const georegion = pageHtml.match(/<meta.*name="georegion".*content="(.*)".*\/>/)[1];
+    //env
+    const env = pageHtml.match(/<meta.*name="env".*content="(.*)".*\/>/)[1];
 
     const response = {
       statusCode: 200,
-      body: {tenant,georegion}
+      body: {tenant,georegion,env}
     }
 
     // log the response status code
